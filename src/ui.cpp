@@ -589,6 +589,7 @@ void UI::loadSettings(Settings* s)
         Settings temp = {100, 100, 0};
         saveSettings(&temp);
         *s = temp;
+        f.close();
         return;
     }
 
