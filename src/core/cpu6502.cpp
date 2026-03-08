@@ -540,24 +540,21 @@ inline uint8_t Cpu6502::ZPY()
 
 inline uint8_t Cpu6502::Instr_LDA()
 {
-    fetch();
-    A = fetched;
+    A = read(addr_abs);
     SET_ZN(A);
     return 1;
 }
 
 inline uint8_t Cpu6502::Instr_LDX()
 {
-    fetch();
-    X = fetched;
+    X = read(addr_abs);
     SET_ZN(X);
     return 1;
 }
 
 inline uint8_t Cpu6502::Instr_LDY()
 {
-    fetch();
-    Y = fetched;
+    Y = read(addr_abs);
     SET_ZN(Y);
     return 1;
 }
@@ -656,8 +653,7 @@ inline uint8_t Cpu6502::Instr_PLP()
 
 inline uint8_t Cpu6502::Instr_DEC()
 {
-    fetch();
-    temp = (fetched - 1) & 0x00FF;
+    temp = (read(addr_abs) - 1) & 0x00FF;
     SET_ZN(temp);
     write(addr_abs, (uint8_t)temp);
     return 0;
@@ -679,8 +675,7 @@ inline uint8_t Cpu6502::Instr_DEY()
 
 inline uint8_t Cpu6502::Instr_INC()
 {
-    fetch();
-    temp = (fetched + 1) & 0x00FF;
+    temp = (read(addr_abs) + 1) & 0x00FF;
     SET_ZN(temp);
     write(addr_abs, (uint8_t)temp);
     return 0;
@@ -702,7 +697,7 @@ inline uint8_t Cpu6502::Instr_INY()
 
 inline uint8_t Cpu6502::Instr_ADC()
 {
-    fetch();
+    fetched = read(addr_abs);
     temp = (uint16_t)A + (uint16_t)fetched + (uint16_t)GET_FLAG(C);
     SET_FLAG(C, temp > 255);
     SET_FLAG(V, ((~((uint16_t)A ^ (uint16_t)fetched) & ((uint16_t)A ^ temp)) & 0x0080) != 0);
@@ -713,8 +708,7 @@ inline uint8_t Cpu6502::Instr_ADC()
 
 inline uint8_t Cpu6502::Instr_SBC()
 {
-    fetch();
-    uint16_t value = ((uint16_t)fetched) ^ 0x00FF;
+    uint16_t value = ((uint16_t)read(addr_abs)) ^ 0x00FF;
 
     temp = (uint16_t)A + value + (uint16_t)GET_FLAG(C);
     SET_FLAG(C, temp > 255);
@@ -726,24 +720,21 @@ inline uint8_t Cpu6502::Instr_SBC()
 
 inline uint8_t Cpu6502::Instr_AND()
 {
-    fetch();
-    A = A & fetched;
+    A = A & read(addr_abs);;
     SET_ZN(A);
     return 1;
 }
 
 inline uint8_t Cpu6502::Instr_EOR()
 {
-    fetch();
-    A = A ^ fetched;
+    A = A ^ read(addr_abs);
     SET_ZN(A);
     return 1;
 }
 
 inline uint8_t Cpu6502::Instr_ORA()
 {
-    fetch();
-    A = A | fetched;
+    A = A | read(addr_abs);
     SET_ZN(A);
     return 1;
 }
@@ -838,7 +829,7 @@ inline uint8_t Cpu6502::Instr_SEI()
 
 inline uint8_t Cpu6502::Instr_CMP()
 {
-    fetch();
+    fetched = read(addr_abs);
     temp = (uint16_t)A - (uint16_t)fetched;
     SET_FLAG(C, A >= fetched);
     SET_ZN(temp & 0x00FF);
@@ -847,7 +838,7 @@ inline uint8_t Cpu6502::Instr_CMP()
 
 inline uint8_t Cpu6502::Instr_CPX()
 {
-    fetch();
+    fetched = read(addr_abs);
     temp = (uint16_t)X - (uint16_t)fetched;
     SET_FLAG(C, X >= fetched);
     SET_ZN(temp & 0x00FF);
@@ -856,7 +847,7 @@ inline uint8_t Cpu6502::Instr_CPX()
 
 inline uint8_t Cpu6502::Instr_CPY()
 {
-    fetch();
+    fetched = read(addr_abs);
     temp = (uint16_t)Y - (uint16_t)fetched;
     SET_FLAG(C, Y >= fetched);
     SET_ZN(temp & 0x00FF);
@@ -1041,7 +1032,7 @@ inline uint8_t Cpu6502::Instr_RTI()
 
 inline uint8_t Cpu6502::Instr_BIT()
 {
-    fetch();
+    fetched = read(addr_abs);
     temp = A & fetched;
     SET_FLAG(Z, temp == 0);
     SET_FLAG(N, fetched & 0x80);
