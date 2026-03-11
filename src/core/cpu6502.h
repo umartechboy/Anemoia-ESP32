@@ -65,13 +65,14 @@ public:
     uint16_t cycles = 0;
     uint16_t temp = 0x0000;
 
-private: 
-    Cartridge* cart = nullptr;
-	Bus* bus = nullptr;
+private:
+    Cartridge* __restrict cart = nullptr;
+    Bus* __restrict bus = nullptr;
     bool addrmode_implied = false;
     uint8_t additional_cycle1 = 0;
     uint8_t additional_cycle2 = 0;
     uint8_t fetch();
+    uint8_t fast_fetch();
     uint8_t read(uint16_t addr);
     void write(uint16_t addr, uint8_t data);
     void OAM_Write(uint8_t addr, uint8_t data);
