@@ -407,13 +407,16 @@ void UI::settingsMenu(Bus* nes)
         int y = items_y[i] + text_padding;
         if (i == Brightness)
         {
-            #ifdef TFT_BACKLIGHT_ENABLE
+            if (hw_config.backlight)
+            {
                 drawText(items[i], window_x + 12, y);
-            #else
+            }
+            else
+            {
                 screen->setCursor(window_x + 12, y);
                 screen->setTextColor(TFT_DARKGREY);
                 screen->print(items[i]);
-            #endif
+            }
         }
         else
             drawText(items[i], window_x + 12, y);
@@ -431,13 +434,11 @@ void UI::settingsMenu(Bus* nes)
             {
                 select--;
                 if (select < 0) select = (num_items - 1);
-                #ifndef TFT_BACKLIGHT_ENABLE
-                    if (select == Brightness)
-                    {
-                        select--;
-                        if (select < 0) select = (num_items - 1);
-                    }
-                #endif
+                if (!hw_config.backlight && select == Brightness)
+                {
+                    select--;
+                    if (select < 0) select = (num_items - 1);
+                }
                 last_input_time = now;
             }
 
@@ -445,13 +446,11 @@ void UI::settingsMenu(Bus* nes)
             {
                 select++; 
                 if (select > (num_items - 1)) select = 0;
-                #ifndef TFT_BACKLIGHT_ENABLE
-                    if (select == Brightness)
-                    {
-                        select++;
-                        if (select > (num_items - 1)) select = 0;
-                    }
-                #endif
+                if (!hw_config.backlight && select == Brightness)
+                {
+                    select++;
+                    if (select > (num_items - 1)) select = 0;
+                }
                 last_input_time = now;
             }
 
@@ -552,9 +551,8 @@ void UI::initializeSettings()
     }
     loadSettings(&settings);
 
-    #ifdef TFT_BACKLIGHT_ENABLE
+    if (hw_config.backlight)
         setBrightness(settings.brightness);
-    #endif
 }
 
 void UI::loadEmulatorSettings(Bus* nes)

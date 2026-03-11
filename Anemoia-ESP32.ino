@@ -1,4 +1,3 @@
-
 #include <Arduino.h>
 #include <SD.h>
 #include <SPI.h>
@@ -11,6 +10,7 @@
 #include "src/controller.h"
 #include "src/ui.h"
 #include "config.h"
+#include "hwconfig.h"
 #include "driver/i2s.h"
 #include "esp_wifi.h"
 #include "esp_bt.h"
@@ -20,6 +20,7 @@
 #error The optimization flags were not applied! Please refer to *Step 4* of the README how to build and upload section.
 #endif
 
+HWConfig hw_config;
 TFT_eSPI screen = TFT_eSPI();
 SPIClass SD_SPI(HSPI);
 UI ui(&screen);
@@ -39,17 +40,20 @@ void setup()
     esp_bt_mem_release(ESP_BT_MODE_BTDM);
     esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
 
-    #ifdef TFT_BACKLIGHT_ENABLE
+    hw_config = loadConfig();
+
+    if (hw_config.backlight)
+    {
         pinMode(TFT_BACKLIGHT_PIN, OUTPUT);
         ledcAttach(TFT_BACKLIGHT_PIN, BL_FREQ, BL_RESOLUTION);
         ledcWrite(TFT_BACKLIGHT_PIN, 255);
-    #endif
+    }
 
     setupI2SDAC();
 
     // Initialize TFT screen
     screen.begin();
-    screen.setRotation(SCREEN_ROTATION);
+    screen.setRotation(hw_config.rotation);
     #ifndef TFT_PARALLEL
         screen.initDMA();
     #endif
@@ -162,7 +166,7 @@ bool initSD()
 {
     Serial.println("Initializing SD...");
     SD_SPI.begin(SD_SCLK_PIN, SD_MISO_PIN, SD_MOSI_PIN, SD_CS_PIN);
-    if (!SD.begin(SD_CS_PIN, SD_SPI, SD_FREQ)) 
+    if (!SD.begin(SD_CS_PIN, SD_SPI, hw_config.sd_freq * 1000000)) 
     {
         #ifdef DEBUG
             Serial.println("SD Card Mount Failed");

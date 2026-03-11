@@ -6,6 +6,7 @@
 
 #include "controller.h"
 #include "core/bus.h"
+#include "hwconfig.h"
 
 #define BL_CHANNEL 0
 #define BL_FREQ 5000
@@ -18,6 +19,7 @@
 #define SELECTED_TEXT_COLOR 0x57CA
 #define SELECTED_BG_COLOR 0x0560
 
+extern HWConfig hw_config;
 class UI
 {
 public:

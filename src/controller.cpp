@@ -1,36 +1,14 @@
 #include "../config.h"
+#include "../hwconfig.h"
 #include "controller.h"
 #include "core/bus.h"
 #include <Arduino.h>
 
+extern HWConfig hw_config;
+
 uint8_t controllerRead()
 {
-    uint8_t state = 0;
-
-#if CONTROLLER_TYPE == 0
-    if (digitalRead(A_BUTTON)      == LOW) state |= CONTROLLER::A;
-    if (digitalRead(B_BUTTON)      == LOW) state |= CONTROLLER::B;
-    if (digitalRead(SELECT_BUTTON) == LOW) state |= CONTROLLER::Select;
-    if (digitalRead(START_BUTTON)  == LOW) state |= CONTROLLER::Start;
-    if (digitalRead(UP_BUTTON)     == LOW) state |= CONTROLLER::Up;
-    if (digitalRead(DOWN_BUTTON)   == LOW) state |= CONTROLLER::Down;
-    if (digitalRead(LEFT_BUTTON)   == LOW) state |= CONTROLLER::Left;
-    if (digitalRead(RIGHT_BUTTON)  == LOW) state |= CONTROLLER::Right;
-
-#elif CONTROLLER_TYPE == 1
-    state = NESControllerRead();
-
-#elif CONTROLLER_TYPE == 2
-    state = SNESControllerRead();
-
-#elif CONTROLLER_TYPE == 3
-    state = PSXControllerRead();
-
-#else
-    #error "No controller type selected"
-#endif
-
-    return state;
+    return _controllerRead();
 }
 
 bool isDownPressed(CONTROLLER button)
@@ -40,55 +18,77 @@ bool isDownPressed(CONTROLLER button)
 
 void initController()
 {
-#if CONTROLLER_TYPE == 0
-    pinMode(A_BUTTON, INPUT_PULLUP);
-    pinMode(B_BUTTON, INPUT_PULLUP);
-    pinMode(LEFT_BUTTON, INPUT_PULLUP);
-    pinMode(RIGHT_BUTTON, INPUT_PULLUP);
-    pinMode(UP_BUTTON, INPUT_PULLUP);
-    pinMode(DOWN_BUTTON, INPUT_PULLUP);
-    pinMode(START_BUTTON, INPUT_PULLUP);
-    pinMode(SELECT_BUTTON, INPUT_PULLUP);
-
-#elif CONTROLLER_TYPE == 1
-    pinMode(CONTROLLER_NES_CLK, OUTPUT);
-    pinMode(CONTROLLER_NES_LATCH, OUTPUT);
-    pinMode(CONTROLLER_NES_DATA, INPUT);
-
-#elif CONTROLLER_TYPE == 2
-    pinMode(CONTROLLER_SNES_CLK, OUTPUT);
-    pinMode(CONTROLLER_SNES_LATCH, OUTPUT);
-    pinMode(CONTROLLER_SNES_DATA, INPUT);
-
-#elif CONTROLLER_TYPE == 3
-    pinMode(CONTROLLER_PSX_DATA, INPUT_PULLUP);
-    pinMode(CONTROLLER_PSX_COMMAND, OUTPUT);
-    pinMode(CONTROLLER_PSX_ATTENTION, OUTPUT);
-    pinMode(CONTROLLER_PSX_CLK, OUTPUT);
-
-    digitalWrite(CONTROLLER_PSX_ATTENTION, HIGH);
-    digitalWrite(CONTROLLER_PSX_CLK, HIGH);
-    delayMicroseconds(10);
-
-    // Dummy transfer bytes to clean internal controller state
-    for (int i = 0; i < 2; i++)
+    switch (hw_config.controller_type)
     {
-        digitalWrite(CONTROLLER_PSX_ATTENTION, LOW);
-        delayMicroseconds(10);
+    case 0:
+        pinMode(A_BUTTON, INPUT_PULLUP);
+        pinMode(B_BUTTON, INPUT_PULLUP);
+        pinMode(LEFT_BUTTON, INPUT_PULLUP);
+        pinMode(RIGHT_BUTTON, INPUT_PULLUP);
+        pinMode(UP_BUTTON, INPUT_PULLUP);
+        pinMode(DOWN_BUTTON, INPUT_PULLUP);
+        pinMode(START_BUTTON, INPUT_PULLUP);
+        pinMode(SELECT_BUTTON, INPUT_PULLUP);
+        _controllerRead = gpioRead;
+        break;
 
-        PSXTransferByte(0);
-        delayMicroseconds(10);
+    case 1:
+        pinMode(CONTROLLER_NES_CLK, OUTPUT);
+        pinMode(CONTROLLER_NES_LATCH, OUTPUT);
+        pinMode(CONTROLLER_NES_DATA, INPUT);
+        _controllerRead = NESControllerRead;
+        break;
+
+    case 2:
+        pinMode(CONTROLLER_SNES_CLK, OUTPUT);
+        pinMode(CONTROLLER_SNES_LATCH, OUTPUT);
+        pinMode(CONTROLLER_SNES_DATA, INPUT);
+        _controllerRead = SNESControllerRead;
+        break;
+
+    case 3:
+        pinMode(CONTROLLER_PSX_DATA, INPUT_PULLUP);
+        pinMode(CONTROLLER_PSX_COMMAND, OUTPUT);
+        pinMode(CONTROLLER_PSX_ATTENTION, OUTPUT);
+        pinMode(CONTROLLER_PSX_CLK, OUTPUT);
 
         digitalWrite(CONTROLLER_PSX_ATTENTION, HIGH);
-        delayMicroseconds(12);
-    }
+        digitalWrite(CONTROLLER_PSX_CLK, HIGH);
+        delayMicroseconds(10);
 
-#else
-    #error "No controller type selected"
-#endif
+        // Dummy transfer bytes to clean internal controller state
+        for (int i = 0; i < 2; i++)
+        {
+            digitalWrite(CONTROLLER_PSX_ATTENTION, LOW);
+            delayMicroseconds(10);
+
+            PSXTransferByte(0);
+            delayMicroseconds(10);
+
+            digitalWrite(CONTROLLER_PSX_ATTENTION, HIGH);
+            delayMicroseconds(12);
+        }
+        _controllerRead = PSXControllerRead;
+        break;
+    }
 }
 
-inline uint8_t NESControllerRead()
+static uint8_t gpioRead()
+{
+    uint8_t state = 0x00;
+    if (digitalRead(A_BUTTON)      == LOW) state |= CONTROLLER::A;
+    if (digitalRead(B_BUTTON)      == LOW) state |= CONTROLLER::B;
+    if (digitalRead(SELECT_BUTTON) == LOW) state |= CONTROLLER::Select;
+    if (digitalRead(START_BUTTON)  == LOW) state |= CONTROLLER::Start;
+    if (digitalRead(UP_BUTTON)     == LOW) state |= CONTROLLER::Up;
+    if (digitalRead(DOWN_BUTTON)   == LOW) state |= CONTROLLER::Down;
+    if (digitalRead(LEFT_BUTTON)   == LOW) state |= CONTROLLER::Left;
+    if (digitalRead(RIGHT_BUTTON)  == LOW) state |= CONTROLLER::Right;
+
+    return state;
+}
+
+static uint8_t NESControllerRead()
 {
     uint8_t state = 0x00;
     digitalWrite(CONTROLLER_NES_LATCH, HIGH);
@@ -108,7 +108,7 @@ inline uint8_t NESControllerRead()
     return state;
 }
 
-inline uint8_t SNESControllerRead()
+static uint8_t SNESControllerRead()
 {
     // SNES bits
     // 0 - B
@@ -152,7 +152,7 @@ inline uint8_t SNESControllerRead()
     return state;
 }
 
-inline uint8_t PSXControllerRead()
+static uint8_t PSXControllerRead()
 {
     /*
     Communication Protocol
@@ -269,7 +269,7 @@ inline uint8_t PSXControllerRead()
     return state;
 }
 
-inline uint8_t PSXTransferByte(uint8_t byte)
+static uint8_t PSXTransferByte(uint8_t byte)
 {
     uint8_t temp = 0;
     for (int i = 0; i < 8; i++)
