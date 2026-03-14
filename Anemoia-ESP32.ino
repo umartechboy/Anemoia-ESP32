@@ -214,15 +214,13 @@ void setupI2SDAC()
         .fixed_mclk = 0
     };
 
+    if (hw_config.dac_pin == 1) i2s_config.channel_format = I2S_CHANNEL_FMT_ONLY_LEFT;
     i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
-    #if DAC_PIN == 0
+    
+    if (hw_config.dac_pin == 0)
         i2s_set_dac_mode(I2S_DAC_CHANNEL_RIGHT_EN);
-    #elif DAC_PIN == 1
-        i2s_config.channel_format = I2S_CHANNEL_FMT_ONLY_LEFT;
+    else if (hw_config.dac_pin == 1)
         i2s_set_dac_mode(I2S_DAC_CHANNEL_LEFT_EN);
-    #else
-        #error "Invalid DAC PIN is used."
-    #endif
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
     i2s_config_t i2s_config = {
         .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX),
