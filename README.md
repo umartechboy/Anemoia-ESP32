@@ -15,7 +15,7 @@
 </p>
 
 <div align="center">
-  <video width="303" height="540" src="https://github.com/user-attachments/assets/d6822dde-2613-4256-b623-08484ff52037"></video>
+  <video src="https://github.com/user-attachments/assets/2b766040-4717-4ae2-9f72-5637c5ec5cd3"> </video>
 </div>
 
 ---
