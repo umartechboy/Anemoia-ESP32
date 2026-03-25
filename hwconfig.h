@@ -32,11 +32,13 @@ inline HWConfig loadConfig()
     if (!LittleFS.begin()) 
     { 
         LOG("LittleFS mount failed, attempting format..."); 
-        if (!LittleFS.format()) {
+        if (!LittleFS.format()) 
+        {
             LOG("LittleFS.format() failed");
             return cfg;
         }
-        if (!LittleFS.begin()) {
+        if (!LittleFS.begin()) 
+        {
             LOG("LittleFS mount failed after format, using defines in config.h"); 
             return cfg;
         }
