@@ -4,8 +4,8 @@ C:\Users\Public\Documents\Altium\Projects\Anemoia-ESP32-SMD\Project Outputs for 
 ========================================================================================================================
 File Design Information:
 
-Date:       19/03/26
-Time:       15:22
+Date:       28/03/26
+Time:       13:08
 Revision:   Not in VersionControl
 Variant:    No variations
 Units used: mm
@@ -57,8 +57,6 @@ Units used: mm
 "R13","3.9O","TopLayer","RES_0612","73.1521mm","-33.4000mm","180","RES 3.9O ±5% 750mW 0612","73.1521mm","-33.4000mm","73.7041mm","-33.4000mm"
 "R22","10KO","TopLayer","RES_0402","66.0000mm","-1.0000mm","180","RES 10K OHM 1% 1/16W 0402","66.0000mm","-1.0000mm","66.3750mm","-1.0000mm"
 "R21","10KO","TopLayer","RES_0402","65.7500mm","-10.7500mm","90","RES 10K OHM 1% 1/16W 0402","65.7500mm","-10.7500mm","65.7500mm","-11.1250mm"
-"R30","10KO","TopLayer","RES_0402","39.9750mm","-18.8000mm","180","RES 10K OHM 1% 1/16W 0402","39.9750mm","-18.8000mm","40.3500mm","-18.8000mm"
-"R29","10KO","TopLayer","RES_0402","44.9000mm","-17.0000mm","270","RES 10K OHM 1% 1/16W 0402","44.9000mm","-17.0000mm","44.9000mm","-16.6250mm"
 "R31","10KO","TopLayer","RES_0402","33.4000mm","-46.7000mm","270","RES 10K OHM 1% 1/16W 0402","33.4000mm","-46.7000mm","33.4000mm","-46.3250mm"
 "R27","10KO","TopLayer","RES_0402","33.4000mm","-44.0000mm","270","RES 10K OHM 1% 1/16W 0402","33.4000mm","-44.0000mm","33.4000mm","-43.6250mm"
 "R12","10KO","TopLayer","RES_0402","17.3750mm","-17.5000mm","180","RES 10K OHM 1% 1/16W 0402","17.3750mm","-17.5000mm","17.7500mm","-17.5000mm"
@@ -97,7 +95,7 @@ Units used: mm
 "C7","22uF, 10V","TopLayer","CAP_CER_0603","63.5000mm","-12.6500mm","0","CAP CER 22UF 10V X5R 0603","63.5000mm","-12.6500mm","62.7994mm","-12.6500mm"
 "C26","0.1uF, 50V","TopLayer","CAP_CER_0603","36.5638mm","-16.6579mm","0","CAP CER 0.1UF 50V X7R 0603","36.5638mm","-16.6579mm","35.8632mm","-16.6579mm"
 "C25","10uF, 6.3V","TopLayer","CAP_CER_SAMSUNG_0402","41.0000mm","-17.0000mm","180","6.3V 10uF X5R ±20% 0402 Ceramic Capacitors RoHS","41.0000mm","-17.0000mm","41.6270mm","-17.0000mm"
-"C24","0.1uF, 50V","TopLayer","CAP_CER_0603","29.9500mm","-38.1500mm","180","CAP CER 0.1UF 50V X7R 0603","29.9500mm","-38.1500mm","30.6506mm","-38.1500mm"
+"C24","0.1uF, 50V","TopLayer","CAP_CER_0603","29.9006mm","-38.2000mm","0","CAP CER 0.1UF 50V X7R 0603","29.9006mm","-38.2000mm","29.2000mm","-38.2000mm"
 "C27","0.1uF, 50V","TopLayer","CAP_CER_0603","25.4500mm","-38.1500mm","0","CAP CER 0.1UF 50V X7R 0603","25.4500mm","-38.1500mm","24.7494mm","-38.1500mm"
 "C22","22uF, 10V","TopLayer","CAP_CER_0603","18.2500mm","-26.7500mm","0","CAP CER 22UF 10V X5R 0603","18.2500mm","-26.7500mm","17.5494mm","-26.7500mm"
 "C21","10uF, 6.3V","TopLayer","CAP_CER_SAMSUNG_0402","16.2500mm","-23.7500mm","270","6.3V 10uF X5R ±20% 0402 Ceramic Capacitors RoHS","16.2500mm","-23.7500mm","16.2500mm","-23.1230mm"
