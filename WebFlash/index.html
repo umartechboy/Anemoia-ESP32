@@ -23,88 +23,61 @@
   <div id="main" style="display:none">
 
     <!-- Device type selection -->
-    <div class="option">
-      <label for="device">Device Type:</label>
-      <select id="device">
-        <option value="esp32">ESP32</option>
-        <option value="cyd">CYD</option>
-      </select>
+    <div>
+      <p>Device Type:
+        <label><input type="radio" name="device" value="esp32" checked>ESP32</label>
+        <label><input type="radio" name="device" value="cyd">CYD</label>
+      </p>
     </div>
 
     <!-- Display -->
-    <div class="option">
-      <label for="display">SPI Display Driver:</label>
-      <select id="display">
-        <option value="ST7789">ST7789</option>
-        <option value="ILI9341">ILI9341</option>
-      </select>
-    </div>
-
-    <!-- Backlight -->
-    <div class="option" id="backlightOption">
-      <label for="backlight">Display Backlight Pin Enable:</label>
-      <select id="backlight">
-        <option value="backlight_off">Off</option>
-        <option value="backlight_on">On</option>
-      </select>
-    </div>
-
-    <!-- Color byte -->
-    <div class="option" id="swapOption">
-      <label for="swap">Color Byte Order:</label>
-      <select id="swap">
-        <option value="swap_bytes">Normal</option>
-        <option value="swap_bytes_off">Swap Bytes</option>
-      </select>
+    <div>
+      <p>SPI Display Driver:
+        <label><input type="radio" name="display" value="ST7789" checked>ST7789</label>
+        <label><input type="radio" name="display" value="ILI9341">ILI9341</label>
+      </p>
     </div>
 
     <!-- Screen SPI frequency (compile-time) -->
-    <div class="option">
-      <label for="screen_freq">Screen SPI Frequency:</label>
-      <select id="screen_freq">
-        <option value="screen_freq_80MHz">80 MHz</option>
-        <option value="screen_freq_40MHz">40 MHz</option>
-      </select>
+    <div>
+      <p>Screen SPI Frequency:
+        <label><input type="radio" name="screen_freq" value="screen_freq_80MHz" checked>80 MHz</label>
+        <label><input type="radio" name="screen_freq" value="screen_freq_40MHz">40 MHz</label>
+      </p>
     </div>
 
-    <hr>
-
     <!-- Controller type (runtime) -->
-    <div class="option" id="controllerOption">
-      <label for="controller">Controller:</label>
-      <select id="controller">
-        <option value="gpio">GPIO Buttons</option>
-        <option value="nes">NES Controller</option>
-        <option value="snes">SNES Controller</option>
-        <option value="psx">PSX Controller</option>
-      </select>
+    <div id="controllerOption">
+      <p>Controller:
+        <label><input type="radio" name="controller" value="gpio" checked>GPIO Buttons</label>
+        <label><input type="radio" name="controller" value="nes">NES Controller</label>
+        <label><input type="radio" name="controller" value="snes">SNES Controller</label>
+        <label><input type="radio" name="controller" value="psx">PSX Controller</label>
+      </p>
     </div>
 
     <!-- Screen rotation (runtime) -->
-    <div class="option">
-      <label for="rotation">Screen Rotation:</label>
-      <select id="rotation">
-        <option value="rotation1">Landscape</option>
-        <option value="rotation3">Landscape Flipped</option>
-      </select>
+    <div>
+      <p>Screen Rotation:
+        <label><input type="radio" name="rotation" value="rotation1" checked>Landscape</label>
+        <label><input type="radio" name="rotation" value="rotation3">Landscape Flipped</label>
+      </p>
     </div>
 
     <!-- SD frequency (runtime) -->
-    <div class="option">
-      <label for="sd_freq">SD Frequency:</label>
-      <select id="sd_freq">
-        <option value="sd_freq_80MHz">80 MHz</option>
-        <option value="sd_freq_40MHz">40 MHz</option>
-      </select>
+    <div>
+      <p>SD Frequency:
+        <label><input type="radio" name="sd_freq" value="sd_freq_80MHz" checked>80 MHz</label>
+        <label><input type="radio" name="sd_freq" value="sd_freq_40MHz">40 MHz</label>
+      </p>
     </div>
 
     <!-- DAC Audio Pin (runtime, hidden for CYD) -->
-    <div class="option" id="dacOption">
-      <label for="dacpin">DAC Audio Pin:</label>
-      <select id="dacpin">
-        <option value="dac_gpio25">GPIO 25</option>
-        <option value="dac_gpio26">GPIO 26</option>
-      </select>
+    <div id="dacOption">
+      <p>DAC Audio Pin:
+        <label><input type="radio" name="dacpin" value="dac_gpio25" checked>GPIO 25</label>
+        <label><input type="radio" name="dacpin" value="dac_gpio26">GPIO 26</label>
+      </p>
     </div>
 
     <!-- Frameskip (compile-time) -->
@@ -118,13 +91,19 @@
     </div>
     -->
 
+    <!-- Backlight -->
+    <div id="backlightOption">
+      <label><input type="checkbox" id="backlight"> Display Backlight Pin Enable</label>
+    </div>
+
+    <!-- Color byte -->
+    <div id="swapOption">
+      <label><input type="checkbox" id="swap"> Swap Color Byte Order</label>
+    </div>
+
     <!-- Debug (compile-time) -->
-    <div class="option">
-      <label for="debug">Debug:</label>
-      <select id="debug">
-        <option value="debug_off">Disabled</option>
-        <option value="debug_on">Enabled</option>
-      </select>
+    <div>
+      <label><input type="checkbox" id="debug"> Enable Debug</label>
     </div>
 
     <br>
@@ -140,52 +119,49 @@
 
   <script>
     const installButton = document.getElementById("installButton");
-    const deviceSelect = document.getElementById("device");
+
+    function getRadio(name) {
+      return document.querySelector(`input[name="${name}"]:checked`).value;
+    }
 
     function updateManifest() {
-      const device      = document.getElementById("device").value;
-      const display     = document.getElementById("display").value;
-      let swap        = document.getElementById("swap").value;
-      const screen_freq = document.getElementById("screen_freq").value;
-      const frameskip   = "off"; // temporarily hardcoded — UI option commented out
-      const debug       = document.getElementById("debug").value;
+      const device      = getRadio("device");
+      const display     = getRadio("display");
+      const screen_freq = getRadio("screen_freq");
+      const rotation    = getRadio("rotation");
+      const sd_freq     = getRadio("sd_freq");
 
-      // Runtime config values — baked into config.bin at the same path
-      let controller  = document.getElementById("controller").value;
-      const rotation    = document.getElementById("rotation").value;
-      const sd_freq     = document.getElementById("sd_freq").value;
-      let dacpin      = document.getElementById("dacpin").value;
-      let backlight   = document.getElementById("backlight").value;
+      let swap       = document.getElementById("swap").checked ? "swap_bytes_off" : "swap_bytes";
+      let backlight  = document.getElementById("backlight").checked ? "backlight_on" : "backlight_off";
+      let controller = getRadio("controller");
+      let dacpin     = getRadio("dacpin");
+      const debug    = document.getElementById("debug").checked ? "debug_on" : "debug_off";
 
-      // Override values for CYD
       if (device === "cyd") {
         controller = "nes";
-        backlight = "backlight_on";
-        swap = "swap_bytes";
-        dacpin = "dac_gpio26";
+        backlight  = "backlight_on";
+        swap       = "swap_bytes";
+        dacpin     = "dac_gpio26";
       }
 
-      // Manifest path — compile-time axes only determine which binary is used
       const manifestPath = "manifests/" +
-      device + "-" + display + "-" + backlight + "-" + swap + "-" + screen_freq + "-" +
-      controller + "-" + rotation + "-" + sd_freq + "-" + dacpin + "-" + debug +
-      ".json";
+        device + "-" + display + "-" + backlight + "-" + swap + "-" + screen_freq + "-" +
+        controller + "-" + rotation + "-" + sd_freq + "-" + dacpin + "-" + debug +
+        ".json";
 
       installButton.manifest = manifestPath;
     }
 
     function updateVisibility() {
-      const device = deviceSelect.value;
-      document.getElementById("dacOption").classList.toggle("hidden", device === "cyd");
-      document.getElementById("backlightOption").classList.toggle("hidden", device === "cyd");
-      document.getElementById("swapOption").classList.toggle("hidden", device === "cyd");
-      document.getElementById("controllerOption").classList.toggle("hidden", device === "cyd");
-      if (device === "cyd") {
-        document.getElementById("controller").value = "nes";
-      }
+      const device = getRadio("device");
+      const isCyd = device === "cyd";
+      document.getElementById("dacOption").style.display      = isCyd ? "none" : "";
+      document.getElementById("backlightOption").style.display = isCyd ? "none" : "";
+      document.getElementById("swapOption").style.display     = isCyd ? "none" : "";
+      document.getElementById("controllerOption").style.display = isCyd ? "none" : "";
     }
 
-    document.querySelectorAll("select").forEach(el =>
+    document.querySelectorAll("input").forEach(el =>
       el.addEventListener("change", () => { updateManifest(); updateVisibility(); })
     );
 
