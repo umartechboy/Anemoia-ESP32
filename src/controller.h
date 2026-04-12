@@ -14,16 +14,10 @@ enum CONTROLLER
     Right = (1 << 7)  // Right Button
 };
 
-static uint8_t (*_controllerRead)() = nullptr;
+extern uint8_t (*_controllerRead)();
 
 void initController();
 uint8_t controllerRead();
 bool isDownPressed(CONTROLLER button);
-
-static uint8_t gpioRead();
-static uint8_t NESControllerRead();
-static uint8_t SNESControllerRead();
-static uint8_t PSXControllerRead();
-static uint8_t PSXTransferByte(uint8_t byte);
 
 #endif

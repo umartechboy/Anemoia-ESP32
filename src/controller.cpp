@@ -5,6 +5,7 @@
 #include <Arduino.h>
 
 extern HWConfig hw_config;
+uint8_t (*_controllerRead)() = nullptr;
 
 uint8_t controllerRead()
 {
@@ -14,63 +15,6 @@ uint8_t controllerRead()
 bool isDownPressed(CONTROLLER button)
 {
     return (controllerRead() & button) != 0;
-}
-
-void initController()
-{
-    switch (hw_config.controller_type)
-    {
-    case 0:
-        pinMode(A_BUTTON, INPUT_PULLUP);
-        pinMode(B_BUTTON, INPUT_PULLUP);
-        pinMode(LEFT_BUTTON, INPUT_PULLUP);
-        pinMode(RIGHT_BUTTON, INPUT_PULLUP);
-        pinMode(UP_BUTTON, INPUT_PULLUP);
-        pinMode(DOWN_BUTTON, INPUT_PULLUP);
-        pinMode(START_BUTTON, INPUT_PULLUP);
-        pinMode(SELECT_BUTTON, INPUT_PULLUP);
-        _controllerRead = gpioRead;
-        break;
-
-    case 1:
-        pinMode(CONTROLLER_NES_CLK, OUTPUT);
-        pinMode(CONTROLLER_NES_LATCH, OUTPUT);
-        pinMode(CONTROLLER_NES_DATA, INPUT);
-        _controllerRead = NESControllerRead;
-        break;
-
-    case 2:
-        pinMode(CONTROLLER_SNES_CLK, OUTPUT);
-        pinMode(CONTROLLER_SNES_LATCH, OUTPUT);
-        pinMode(CONTROLLER_SNES_DATA, INPUT);
-        _controllerRead = SNESControllerRead;
-        break;
-
-    case 3:
-        pinMode(CONTROLLER_PSX_DATA, INPUT_PULLUP);
-        pinMode(CONTROLLER_PSX_COMMAND, OUTPUT);
-        pinMode(CONTROLLER_PSX_ATTENTION, OUTPUT);
-        pinMode(CONTROLLER_PSX_CLK, OUTPUT);
-
-        digitalWrite(CONTROLLER_PSX_ATTENTION, HIGH);
-        digitalWrite(CONTROLLER_PSX_CLK, HIGH);
-        delayMicroseconds(10);
-
-        // Dummy transfer bytes to clean internal controller state
-        for (int i = 0; i < 2; i++)
-        {
-            digitalWrite(CONTROLLER_PSX_ATTENTION, LOW);
-            delayMicroseconds(10);
-
-            PSXTransferByte(0);
-            delayMicroseconds(10);
-
-            digitalWrite(CONTROLLER_PSX_ATTENTION, HIGH);
-            delayMicroseconds(12);
-        }
-        _controllerRead = PSXControllerRead;
-        break;
-    }
 }
 
 static uint8_t gpioRead()
@@ -150,6 +94,23 @@ static uint8_t SNESControllerRead()
     if (snes_state & (1 << 11)) state |= CONTROLLER::A;
 
     return state;
+}
+
+static uint8_t PSXTransferByte(uint8_t byte)
+{
+    uint8_t temp = 0;
+    for (int i = 0; i < 8; i++)
+    {
+        digitalWrite(CONTROLLER_PSX_COMMAND, (byte >> i) & 1);    
+
+        digitalWrite(CONTROLLER_PSX_CLK, LOW);
+
+        digitalWrite(CONTROLLER_PSX_CLK, HIGH);
+        delayMicroseconds(10);
+        if (digitalRead(CONTROLLER_PSX_DATA) == LOW) temp |= (1 << i);
+    }
+
+    return temp;
 }
 
 static uint8_t PSXControllerRead()
@@ -269,19 +230,59 @@ static uint8_t PSXControllerRead()
     return state;
 }
 
-static uint8_t PSXTransferByte(uint8_t byte)
+void initController()
 {
-    uint8_t temp = 0;
-    for (int i = 0; i < 8; i++)
+    switch (hw_config.controller_type)
     {
-        digitalWrite(CONTROLLER_PSX_COMMAND, (byte >> i) & 1);    
+    case 0:
+        pinMode(A_BUTTON, INPUT_PULLUP);
+        pinMode(B_BUTTON, INPUT_PULLUP);
+        pinMode(LEFT_BUTTON, INPUT_PULLUP);
+        pinMode(RIGHT_BUTTON, INPUT_PULLUP);
+        pinMode(UP_BUTTON, INPUT_PULLUP);
+        pinMode(DOWN_BUTTON, INPUT_PULLUP);
+        pinMode(START_BUTTON, INPUT_PULLUP);
+        pinMode(SELECT_BUTTON, INPUT_PULLUP);
+        _controllerRead = gpioRead;
+        break;
 
-        digitalWrite(CONTROLLER_PSX_CLK, LOW);
+    case 1:
+        pinMode(CONTROLLER_NES_CLK, OUTPUT);
+        pinMode(CONTROLLER_NES_LATCH, OUTPUT);
+        pinMode(CONTROLLER_NES_DATA, INPUT);
+        _controllerRead = NESControllerRead;
+        break;
 
+    case 2:
+        pinMode(CONTROLLER_SNES_CLK, OUTPUT);
+        pinMode(CONTROLLER_SNES_LATCH, OUTPUT);
+        pinMode(CONTROLLER_SNES_DATA, INPUT);
+        _controllerRead = SNESControllerRead;
+        break;
+
+    case 3:
+        pinMode(CONTROLLER_PSX_DATA, INPUT_PULLUP);
+        pinMode(CONTROLLER_PSX_COMMAND, OUTPUT);
+        pinMode(CONTROLLER_PSX_ATTENTION, OUTPUT);
+        pinMode(CONTROLLER_PSX_CLK, OUTPUT);
+
+        digitalWrite(CONTROLLER_PSX_ATTENTION, HIGH);
         digitalWrite(CONTROLLER_PSX_CLK, HIGH);
         delayMicroseconds(10);
-        if (digitalRead(CONTROLLER_PSX_DATA) == LOW) temp |= (1 << i);
-    }
 
-    return temp;
+        // Dummy transfer bytes to clean internal controller state
+        for (int i = 0; i < 2; i++)
+        {
+            digitalWrite(CONTROLLER_PSX_ATTENTION, LOW);
+            delayMicroseconds(10);
+
+            PSXTransferByte(0);
+            delayMicroseconds(10);
+
+            digitalWrite(CONTROLLER_PSX_ATTENTION, HIGH);
+            delayMicroseconds(12);
+        }
+        _controllerRead = PSXControllerRead;
+        break;
+    }
 }
