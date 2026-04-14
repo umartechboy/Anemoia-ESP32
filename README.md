@@ -195,6 +195,8 @@ There are currently three input methods: Tactile push buttons, an NES/SNES contr
 Also connect the power and ground lines if using a controller. 
 Most controllers should work fine from 3.3V power supply. 
 
+---
+
 ### Cheap Yellow Display
 
 [Cheap Yellow Displays](https://github.com/witnessmenow/ESP32-Cheap-Yellow-Display) (CYD) are an all-in-one ESP32 board that comes with most of the hardware needed in this project already integrated, making it ideal for Anemoia-ESP32. Currently only CYDs with an ST7789 display, such as the CYD2USB, are supported.
