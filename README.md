@@ -38,6 +38,9 @@ Want to make a PCB? NextPCB offers PCB fabrication and assembly services with fa
 - [Hardware Overview](#hardware-overview)
   - [Original Hardware](#original-hardware)
   - [Cheap Yellow Display](#cheap-yellow-display)
+  - [Custom-made PCBs](#custom-made-pcbs)
+    - [Module-based PCB](#module-based-pcb)
+    - [Discrete PCB](#discrete-pcb)
   - [Where to Buy](#where-to-buy)
 - [Controls](#controls)
   - [Menu Access](#menu-access)
@@ -208,6 +211,20 @@ Most controllers should work fine from 3.3V power supply.
 | Clock    | GPIO22 (CN1/P3)|
 | Latch    | GPIO27 (CN1)   |
 | Data     | GPIO35 (P3)    |
+
+---
+### Custom-made PCBs
+The schematics, PCB design files, enclosures, and 3D models are available in the `/hardware` and `/3d-model` folder.
+
+#### Module-based PCB
+A PCB that provides a clean, organized way to connect and manage all peripheral modules in one place.
+![Module-based PCB demo](https://github.com/user-attachments/assets/46687b5f-1b71-4be0-8754-2d366c9603dd)
+![Module-based PCB schematic](hardware/Anemoia-ESP32/schematics/Anemoia-ESP32.png)
+
+#### Discrete PCB
+A PCB that offers a more complete, permanent, and compact handheld by using discrete ICs instead of breakout modules.
+![Discrete PCB demo](https://github.com/user-attachments/assets/29aa4584-0e9d-4032-93b5-9dca02997e03)
+![Discrete PCB schematic](hardware/Anemoia-ESP32-SMD/schematics/Anemoia-ESP32-SMD.png)
 
 ---
 
