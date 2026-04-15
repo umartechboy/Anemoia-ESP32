@@ -110,9 +110,9 @@ jobs:
           
           # Copy and configure user_setup.h based on device type and display type
           if [ "${{ matrix.device }}" = "cyd" ]; then
-            cp User_Setup_CYD.h ~/Arduino/libraries/TFT_eSPI/User_Setup.h
+            cp User_Setups/CYD/User_Setup.h ~/Arduino/libraries/TFT_eSPI/User_Setup.h
           else
-            cp User_Setup.h ~/Arduino/libraries/TFT_eSPI/User_Setup.h
+            cp User_Setups/Default/User_Setup.h ~/Arduino/libraries/TFT_eSPI/User_Setup.h
           fi
           
           if [ "${{ matrix.display }}" = "ST7789" ]; then
