@@ -2,8 +2,14 @@
 #define CONFIG_H
 
 // #define CHEAP_YELLOW_DISPLAY_CONF // Uncomment this line if using the CYD
-#ifdef CHEAP_YELLOW_DISPLAY_CONF
+// #define MODULE_BASED_PCB_CONF // Uncomment this line if using the module PCB
+// #define DISCRETE_PCB_CONF // Uncomment this line if using the discrete PCB
+#if defined(CHEAP_YELLOW_DISPLAY_CONF)
   #include "config_cyd.h"
+#elif defined(MODULE_BASED_PCB_CONF)
+  #include "config_module.h"
+#elif defined(DISCRETE_PCB_CONF)
+  #include "config_discrete.h"
 #else
 
 // Controller Configuration
