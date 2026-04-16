@@ -41,7 +41,7 @@ struct Mapper001_state
 };
 constexpr Cartridge::MIRROR Mapper001_state::mirror[4];
 
-IRAM_ATTR bool Mapper001_cpuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
+IRAM_ATTR bool mapper001_cpuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
 {
     if (addr < 0x6000) return false;
 
@@ -63,7 +63,7 @@ IRAM_ATTR bool Mapper001_cpuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
     return true;
 }
 
-IRAM_ATTR bool Mapper001_cpuWrite(Mapper* mapper, uint16_t addr, uint8_t data)
+IRAM_ATTR bool mapper001_cpuWrite(Mapper* mapper, uint16_t addr, uint8_t data)
 {
     if (addr < 0x6000) return false;
 
@@ -159,7 +159,7 @@ IRAM_ATTR bool Mapper001_cpuWrite(Mapper* mapper, uint16_t addr, uint8_t data)
     return true;
 }
 
-IRAM_ATTR bool Mapper001_ppuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
+IRAM_ATTR bool mapper001_ppuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
 {
     if (addr > 0x1FFF) return false;
 
@@ -175,7 +175,7 @@ IRAM_ATTR bool Mapper001_ppuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
     return true;
 }
 
-IRAM_ATTR bool Mapper001_ppuWrite(Mapper* mapper, uint16_t addr, uint8_t data)
+IRAM_ATTR bool mapper001_ppuWrite(Mapper* mapper, uint16_t addr, uint8_t data)
 {
     if (addr > 0x1FFF) return false;
 	
@@ -190,7 +190,7 @@ IRAM_ATTR bool Mapper001_ppuWrite(Mapper* mapper, uint16_t addr, uint8_t data)
 	return false;
 }
 
-IRAM_ATTR uint8_t* Mapper001_ppuReadPtr(Mapper* mapper, uint16_t addr)
+IRAM_ATTR uint8_t* mapper001_ppuReadPtr(Mapper* mapper, uint16_t addr)
 {
     if (addr > 0x1FFF) return nullptr;
 
@@ -205,7 +205,7 @@ IRAM_ATTR uint8_t* Mapper001_ppuReadPtr(Mapper* mapper, uint16_t addr)
     }
 }
 
-void Mapper001_reset(Mapper* mapper)
+void mapper001_reset(Mapper* mapper)
 {
     Mapper001_state* state = (Mapper001_state*)mapper->state;
     memset(state->RAM, 0, 8 * 1024);
@@ -240,7 +240,7 @@ void Mapper001_reset(Mapper* mapper)
     state->cart->setMirrorMode(Cartridge::MIRROR::HORIZONTAL);
 }
 
-void Mapper001_dumpState(Mapper* mapper, File& state)
+void mapper001_dumpState(Mapper* mapper, File& state)
 {
     Mapper001_state* s = (Mapper001_state*)mapper->state;
     Cartridge::MIRROR mirror = s->cart->getMirrorMode();
@@ -274,7 +274,7 @@ void Mapper001_dumpState(Mapper* mapper, File& state)
     }
 }
 
-void Mapper001_loadState(Mapper* mapper, File& state)
+void mapper001_loadState(Mapper* mapper, File& state)
 {
     Mapper001_state* s = (Mapper001_state*)mapper->state;
     Cartridge::MIRROR mirror;
@@ -312,24 +312,24 @@ void Mapper001_loadState(Mapper* mapper, File& state)
     }
 }
 
-const MapperVTable Mapper001_vtable = 
+const MapperVTable mapper001_vtable = 
 {
-    Mapper001_cpuRead,
-    Mapper001_cpuWrite,
-    Mapper001_ppuRead,
-    Mapper001_ppuWrite,
-    Mapper001_ppuReadPtr,
+    mapper001_cpuRead,
+    mapper001_cpuWrite,
+    mapper001_ppuRead,
+    mapper001_ppuWrite,
+    mapper001_ppuReadPtr,
     mapperNoScanline,
     mapperNoCycle,
-    Mapper001_reset,
-    Mapper001_dumpState,
-    Mapper001_loadState,
+    mapper001_reset,
+    mapper001_dumpState,
+    mapper001_loadState,
 };
 
 Mapper createMapper001(uint8_t PRG_banks, uint8_t CHR_banks, Cartridge* cart)
 {
     Mapper mapper;
-    mapper.vtable = &Mapper001_vtable; 
+    mapper.vtable = &mapper001_vtable; 
     Mapper001_state* state = new Mapper001_state;
     
     state->number_PRG_banks = PRG_banks;

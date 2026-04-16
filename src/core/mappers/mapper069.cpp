@@ -37,7 +37,7 @@ struct Mapper069_state
 };
 constexpr Cartridge::MIRROR Mapper069_state::mirror[4];
 
-IRAM_ATTR bool Mapper069_cpuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
+IRAM_ATTR bool mapper069_cpuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
 {
 	if (addr < 0x6000) return false;
 
@@ -61,7 +61,7 @@ IRAM_ATTR bool Mapper069_cpuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
     return true;
 }
 
-IRAM_ATTR bool Mapper069_cpuWrite(Mapper* mapper, uint16_t addr, uint8_t data)
+IRAM_ATTR bool mapper069_cpuWrite(Mapper* mapper, uint16_t addr, uint8_t data)
 {
     if (addr < 0x6000) return false;
 
@@ -116,7 +116,7 @@ IRAM_ATTR bool Mapper069_cpuWrite(Mapper* mapper, uint16_t addr, uint8_t data)
     return false;
 }
 
-IRAM_ATTR bool Mapper069_ppuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
+IRAM_ATTR bool mapper069_ppuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
 {
     if (addr > 0x1FFF) return false;
 
@@ -126,12 +126,12 @@ IRAM_ATTR bool Mapper069_ppuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
     return true;
 }
 
-IRAM_ATTR bool Mapper069_ppuWrite(Mapper* mapper, uint16_t addr, uint8_t data)
+IRAM_ATTR bool mapper069_ppuWrite(Mapper* mapper, uint16_t addr, uint8_t data)
 {
 	return false;
 }
 
-IRAM_ATTR uint8_t* Mapper069_ppuReadPtr(Mapper* mapper, uint16_t addr)
+IRAM_ATTR uint8_t* mapper069_ppuReadPtr(Mapper* mapper, uint16_t addr)
 {
 	if (addr > 0x1FFF) return nullptr;
 
@@ -140,7 +140,7 @@ IRAM_ATTR uint8_t* Mapper069_ppuReadPtr(Mapper* mapper, uint16_t addr)
 	return &state->ptr_CHR_bank_1K[bank][addr & 0x03FF];
 }
 
-IRAM_ATTR void Mapper069_cycle(Mapper* mapper, int cycles)
+IRAM_ATTR void mapper069_cycle(Mapper* mapper, int cycles)
 {
     Mapper069_state* state = (Mapper069_state*)mapper->state;
     if (!state->IRQ_counter_enable) return;
@@ -152,7 +152,7 @@ IRAM_ATTR void Mapper069_cycle(Mapper* mapper, int cycles)
         state->cart->IRQ();
 }
 
-void Mapper069_reset(Mapper* mapper)
+void mapper069_reset(Mapper* mapper)
 {
     Mapper069_state* state = (Mapper069_state*)mapper->state;
     memset(state->RAM, 0, 8 * 1024);
@@ -183,7 +183,7 @@ void Mapper069_reset(Mapper* mapper)
     state->cart->setMirrorMode(Cartridge::MIRROR::HORIZONTAL);
 }
 
-void Mapper069_dumpState(Mapper* mapper, File& state)
+void mapper069_dumpState(Mapper* mapper, File& state)
 {
     Mapper069_state* s = (Mapper069_state*)mapper->state;
     state.write((uint8_t*)&s->command_register, sizeof(s->command_register));
@@ -206,7 +206,7 @@ void Mapper069_dumpState(Mapper* mapper, File& state)
 	state.write(s->RAM, 8*1024);
 }
 
-void Mapper069_loadState(Mapper* mapper, File& state)
+void mapper069_loadState(Mapper* mapper, File& state)
 {
 	Mapper069_state* s = (Mapper069_state*)mapper->state;
     state.read((uint8_t*)&s->command_register, sizeof(s->command_register));
@@ -234,24 +234,24 @@ void Mapper069_loadState(Mapper* mapper, File& state)
 	state.read(s->RAM, 8*1024);
 }	
 
-const MapperVTable Mapper069_vtable = 
+const MapperVTable mapper069_vtable = 
 {
-    Mapper069_cpuRead,
-    Mapper069_cpuWrite,
-    Mapper069_ppuRead,
-    Mapper069_ppuWrite,
-    Mapper069_ppuReadPtr,
+    mapper069_cpuRead,
+    mapper069_cpuWrite,
+    mapper069_ppuRead,
+    mapper069_ppuWrite,
+    mapper069_ppuReadPtr,
     mapperNoScanline,    
-    Mapper069_cycle,
-	Mapper069_reset,
-	Mapper069_dumpState,
-	Mapper069_loadState,
+    mapper069_cycle,
+	mapper069_reset,
+	mapper069_dumpState,
+	mapper069_loadState,
 };
 
 Mapper createMapper069(uint8_t PRG_banks, uint8_t CHR_banks, Cartridge* cart)
 {
     Mapper mapper;
-    mapper.vtable = &Mapper069_vtable; 
+    mapper.vtable = &mapper069_vtable; 
     Mapper069_state* state = new Mapper069_state;
     state->number_PRG_banks = PRG_banks;
     state->number_CHR_banks = CHR_banks;
