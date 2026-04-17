@@ -73,6 +73,23 @@ void setup()
         log_pin_config();
     #endif
     
+    
+  uint32_t currentFreq = getCpuFrequencyMhz();
+  Serial.print("Current CPU Frequency: ");
+  Serial.print(currentFreq);
+  Serial.println(" MHz");
+
+  // 2. Change frequency to 240 MHz
+  if (setCpuFrequencyMhz(240)) {
+    Serial.println("Successfully changed to 240 MHz");
+  } else {
+    Serial.println("Failed to change frequency");
+  }
+
+  // 3. Verify the change
+  Serial.print("New CPU Frequency: ");
+  Serial.println(getCpuFrequencyMhz());
+  
     WiFi.mode(WIFI_OFF);
     esp_wifi_stop();
     esp_wifi_deinit();
@@ -125,8 +142,11 @@ void loop()
 
 void displayUpdateTask(void* param) {
     BufferedDisplay* scr = (BufferedDisplay*)param;
+    int frame = 0;
     while (true) {
         if (scr->needUpdate()) {
+            //scr->AcceptUpdates = frame % 2 == 0;
+            frame++;
             scr->update();
             scr->clearUpdateFlag();
         }

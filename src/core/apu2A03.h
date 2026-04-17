@@ -31,7 +31,7 @@ public:
     uint8_t DMC_sample_byte = 0;
 	bool IRQ = false;
 	uint16_t buffer_index = 0;
-	uint8_t volume = 100;
+	uint8_t volume = 0;
 
 private:
 	Bus* bus = nullptr;

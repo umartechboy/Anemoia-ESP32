@@ -266,6 +266,7 @@ void Apu2A03::setVolume(uint8_t vol)
 
 IRAM_ATTR void Apu2A03::clock()
 {
+    if (volume == 0) return;
     // Clock all sound channels
     pulseChannelClock(pulse1.seq, pulse1_enable);
     pulseChannelClock(pulse2.seq, pulse2_enable);
