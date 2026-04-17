@@ -23,12 +23,12 @@ static uint8_t gpioRead()
     uint8_t state = 0x00;
     if (digitalReadJoystick(A_BUTTON)      == LOW) state |= CONTROLLER::A;
     if (digitalReadJoystick(B_BUTTON)      == LOW) state |= CONTROLLER::B;
-    if (digitalReadJoystick(SELECT_BUTTON) == LOW) state |= CONTROLLER::Select;
-    if (digitalReadJoystick(START_BUTTON)  == LOW) state |= CONTROLLER::Start;
     if (digitalReadJoystick(UP_BUTTON)     == LOW) state |= CONTROLLER::Up;
     if (digitalReadJoystick(DOWN_BUTTON)   == LOW) state |= CONTROLLER::Down;
     if (digitalReadJoystick(LEFT_BUTTON)   == LOW) state |= CONTROLLER::Left;
     if (digitalReadJoystick(RIGHT_BUTTON)  == LOW) state |= CONTROLLER::Right;
+    if (digitalRead(SELECT_BUTTON) == LOW) state |= CONTROLLER::Select;
+    if (digitalRead(START_BUTTON)  == LOW) state |= CONTROLLER::Start;
 
     return state;
 }
@@ -275,7 +275,7 @@ void initController()
         //pinMode(START_BUTTON, INPUT_PULLUP);
         //pinMode(SELECT_BUTTON, INPUT_PULLUP);
         //_controllerRead = gpioRead;
-        _controllerRead = serialRead;
+        _controllerRead = gpioRead;
         break;
 
     case 1:
