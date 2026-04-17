@@ -11,8 +11,6 @@
 #include "../debug.h"
 
 class Cartridge;
-struct MapperVTable;
-
 class Mapper
 {
 public: 
@@ -22,25 +20,11 @@ public:
         CHR_ROM
     };
 
-    const MapperVTable* vtable = nullptr;
     void* state = nullptr;
 };
 
-struct MapperVTable
-{
-    bool (*cpuRead)(Mapper* mapper, uint16_t addr, uint8_t& data);
-    bool (*cpuWrite)(Mapper* mapper, uint16_t addr, uint8_t data);
-    bool (*ppuRead)(Mapper* mapper, uint16_t addr, uint8_t& data);
-    bool (*ppuWrite)(Mapper* mapper, uint16_t addr, uint8_t data);
-    uint8_t* (*ppuReadPtr)(Mapper* mapper, uint16_t addr);
-    void (*scanline)(Mapper* mapper);
-    void (*cycle)(Mapper* mapper, int cycles);
-    void (*reset)(Mapper* mapper);
-    void (*dumpState)(Mapper* mapper, File& state);
-    void (*loadState)(Mapper* mapper, File& state);
-};
-IRAM_ATTR static void mapperNoScanline(Mapper*) {}
-IRAM_ATTR static void mapperNoCycle(Mapper*, int) {}
+inline void mapperNoScanline(Mapper*) {}
+inline void mapperNoCycle(Mapper*, int) {}
 
 struct Bank
 {

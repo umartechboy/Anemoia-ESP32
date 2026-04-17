@@ -1,7 +1,7 @@
 #include "mapper003.h"
 #include "../cartridge.h"
 
-IRAM_ATTR bool Mapper003_cpuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
+IRAM_ATTR bool mapper003_cpuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
 {
     if (addr < 0x8000) return false;
 
@@ -10,7 +10,7 @@ IRAM_ATTR bool Mapper003_cpuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
     return true;
 }
 
-IRAM_ATTR bool Mapper003_cpuWrite(Mapper* mapper, uint16_t addr, uint8_t data)
+IRAM_ATTR bool mapper003_cpuWrite(Mapper* mapper, uint16_t addr, uint8_t data)
 {
     if (addr < 0x8000) return false;
 
@@ -20,7 +20,7 @@ IRAM_ATTR bool Mapper003_cpuWrite(Mapper* mapper, uint16_t addr, uint8_t data)
     return true;
 }
 
-IRAM_ATTR bool Mapper003_ppuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
+IRAM_ATTR bool mapper003_ppuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
 {
     if (addr > 0x1FFF) return false;
 
@@ -29,12 +29,12 @@ IRAM_ATTR bool Mapper003_ppuRead(Mapper* mapper, uint16_t addr, uint8_t& data)
     return true;
 }
 
-IRAM_ATTR bool Mapper003_ppuWrite(Mapper* mapper, uint16_t addr, uint8_t data)
+IRAM_ATTR bool mapper003_ppuWrite(Mapper* mapper, uint16_t addr, uint8_t data)
 {
 	return false;
 }
 
-IRAM_ATTR uint8_t* Mapper003_ppuReadPtr(Mapper* mapper, uint16_t addr)
+IRAM_ATTR uint8_t* mapper003_ppuReadPtr(Mapper* mapper, uint16_t addr)
 {
     if (addr > 0x1FFF) return nullptr;
 
@@ -42,7 +42,7 @@ IRAM_ATTR uint8_t* Mapper003_ppuReadPtr(Mapper* mapper, uint16_t addr)
     return &state->ptr_CHR_bank_8K[addr];
 }
 
-void Mapper003_reset(Mapper* mapper)
+void mapper003_reset(Mapper* mapper)
 {
     Mapper003_state* state = (Mapper003_state*)mapper->state;
 
@@ -50,7 +50,7 @@ void Mapper003_reset(Mapper* mapper)
     state->cart->loadPRGBank(state->PRG_bank, 32*1024, 0);
 }
 
-void Mapper003_dumpState(Mapper* mapper, File& state)
+void mapper003_dumpState(Mapper* mapper, File& state)
 {
     Mapper003_state* s = (Mapper003_state*)mapper->state;
 
@@ -58,7 +58,7 @@ void Mapper003_dumpState(Mapper* mapper, File& state)
     state.write((uint8_t*)&CHR_bank, sizeof(CHR_bank));
 }
 
-void Mapper003_loadState(Mapper* mapper, File& state)
+void mapper003_loadState(Mapper* mapper, File& state)
 {
     Mapper003_state* s = (Mapper003_state*)mapper->state;
 
@@ -68,24 +68,9 @@ void Mapper003_loadState(Mapper* mapper, File& state)
     s->ptr_CHR_bank_8K = getBank(&s->CHR_cache_8K, CHR_bank, Mapper::ROM_TYPE::PRG_ROM);
 }
 
-const MapperVTable Mapper003_vtable = 
-{
-    Mapper003_cpuRead,
-    Mapper003_cpuWrite,
-    Mapper003_ppuRead,
-    Mapper003_ppuWrite,
-    Mapper003_ppuReadPtr,
-    mapperNoScanline,
-    mapperNoCycle,
-    Mapper003_reset,
-    Mapper003_dumpState,
-    Mapper003_loadState,
-};
-
 Mapper createMapper003(uint8_t PRG_banks, uint8_t CHR_banks, Cartridge* cart)
 {
     Mapper mapper;
-    mapper.vtable = &Mapper003_vtable; 
     Mapper003_state* state = new Mapper003_state;
     bankInit(&state->CHR_cache_8K, state->CHR_banks_8K, MAPPER003_NUM_CHR_BANKS_8K, 8*1024, cart);
 
