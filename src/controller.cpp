@@ -1,5 +1,5 @@
-#include "../config.h"
-#include "../hwconfig.h"
+#include "config.h"
+#include "hwconfig.h"
 #include "controller.h"
 #include "core/bus.h"
 #include <Arduino.h>
@@ -17,21 +17,51 @@ bool isDownPressed(CONTROLLER button)
     return (controllerRead() & button) != 0;
 }
 
+extern uint8_t digitalReadJoystick(uint8_t pin);
 static uint8_t gpioRead()
 {
     uint8_t state = 0x00;
-    if (digitalRead(A_BUTTON)      == LOW) state |= CONTROLLER::A;
-    if (digitalRead(B_BUTTON)      == LOW) state |= CONTROLLER::B;
-    if (digitalRead(SELECT_BUTTON) == LOW) state |= CONTROLLER::Select;
-    if (digitalRead(START_BUTTON)  == LOW) state |= CONTROLLER::Start;
-    if (digitalRead(UP_BUTTON)     == LOW) state |= CONTROLLER::Up;
-    if (digitalRead(DOWN_BUTTON)   == LOW) state |= CONTROLLER::Down;
-    if (digitalRead(LEFT_BUTTON)   == LOW) state |= CONTROLLER::Left;
-    if (digitalRead(RIGHT_BUTTON)  == LOW) state |= CONTROLLER::Right;
+    if (digitalReadJoystick(A_BUTTON)      == LOW) state |= CONTROLLER::A;
+    if (digitalReadJoystick(B_BUTTON)      == LOW) state |= CONTROLLER::B;
+    if (digitalReadJoystick(SELECT_BUTTON) == LOW) state |= CONTROLLER::Select;
+    if (digitalReadJoystick(START_BUTTON)  == LOW) state |= CONTROLLER::Start;
+    if (digitalReadJoystick(UP_BUTTON)     == LOW) state |= CONTROLLER::Up;
+    if (digitalReadJoystick(DOWN_BUTTON)   == LOW) state |= CONTROLLER::Down;
+    if (digitalReadJoystick(LEFT_BUTTON)   == LOW) state |= CONTROLLER::Left;
+    if (digitalReadJoystick(RIGHT_BUTTON)  == LOW) state |= CONTROLLER::Right;
 
     return state;
 }
+uint32_t last_input_time = 0;
+uint8_t lastSerialRead = 0;
 
+static uint8_t serialRead()
+{
+    uint8_t state = 0x00;
+    if (Serial.available()){
+        uint8_t input = Serial.read();
+        //Serial.printf("Serial input: %c (0x%02X)\n", input, input);
+        last_input_time = millis();
+        if (input == '1') state |= CONTROLLER::A;
+        else if (input == '2') state |= CONTROLLER::B;
+        else if (input == '3') state |= CONTROLLER::Select;
+        else if (input == '4') state |= CONTROLLER::Start;
+        else if (input == 'w') state |= CONTROLLER::Up;
+        else if (input == 's') state |= CONTROLLER::Down;
+        else if (input == 'a') state |= CONTROLLER::Left;
+        else if (input == 'd') state |= CONTROLLER::Right;
+        lastSerialRead = state;
+    }
+    else
+    {
+        if(millis() - last_input_time < 100) {
+            state = lastSerialRead;
+        }
+
+    }
+    //Serial.printf("Controller state: 0x%02X\n", state);
+    return state;
+}
 static uint8_t NESControllerRead()
 {
     uint8_t state = 0x00;
@@ -229,21 +259,23 @@ static uint8_t PSXControllerRead()
 
     return state;
 }
-
 void initController()
 {
+    Serial.printf("Initializing controller type %d\n", hw_config.controller_type);
+    delay(1);
     switch (hw_config.controller_type)
     {
     case 0:
-        pinMode(A_BUTTON, INPUT_PULLUP);
-        pinMode(B_BUTTON, INPUT_PULLUP);
-        pinMode(LEFT_BUTTON, INPUT_PULLUP);
-        pinMode(RIGHT_BUTTON, INPUT_PULLUP);
-        pinMode(UP_BUTTON, INPUT_PULLUP);
-        pinMode(DOWN_BUTTON, INPUT_PULLUP);
-        pinMode(START_BUTTON, INPUT_PULLUP);
-        pinMode(SELECT_BUTTON, INPUT_PULLUP);
-        _controllerRead = gpioRead;
+        //pinMode(A_BUTTON, INPUT_PULLUP);
+        //pinMode(B_BUTTON, INPUT_PULLUP);
+        //pinMode(LEFT_BUTTON, INPUT_PULLUP);
+        //pinMode(RIGHT_BUTTON, INPUT_PULLUP);
+        //pinMode(UP_BUTTON, INPUT_PULLUP);
+        //pinMode(DOWN_BUTTON, INPUT_PULLUP);
+        //pinMode(START_BUTTON, INPUT_PULLUP);
+        //pinMode(SELECT_BUTTON, INPUT_PULLUP);
+        //_controllerRead = gpioRead;
+        _controllerRead = serialRead;
         break;
 
     case 1:

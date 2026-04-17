@@ -1,4 +1,5 @@
 #include "bus.h"
+#include "BufferedDisplay.h"
 
 Bus::Bus()
 {
@@ -66,7 +67,7 @@ IRAM_ATTR uint8_t Bus::cpuRead(uint16_t addr)
 
 void Bus::reset()
 {
-    ptr_screen->fillScreen(TFT_BLACK);
+    ptr_screen->fillScreen(0x0000);
 	for (auto& i : RAM) i = 0x00;
     cart->reset();
 	cpu.reset();
@@ -152,7 +153,7 @@ void Bus::insertCartridge(Cartridge* cartridge)
     cart->connectBus(this);
 }
 
-void Bus::connectScreen(TFT_eSPI* screen)
+void Bus::connectScreen(BufferedDisplay* screen)
 {
     ptr_screen = screen;
 }
@@ -160,11 +161,11 @@ void Bus::connectScreen(TFT_eSPI* screen)
 IRAM_ATTR void Bus::renderImage(uint16_t scanline)
 {
     #ifndef DISABLE_DMA
-        ptr_screen->pushPixelsDMA(ppu.ptr_display, 256 * SCANLINES_PER_BUFFER);
+        ptr_screen->pushPixelsDMA(ppu.ptr_display, 256 * SCANLINES_PER_BUFFER, scanline);
     #else
-        ptr_screen->pushPixels(ppu.ptr_display, 256 * SCANLINES_PER_BUFFER);
+        ptr_screen->pushPixels(ppu.ptr_display, 256 * SCANLINES_PER_BUFFER, scanline);
     #endif
-} 
+}
 
 IRAM_ATTR void Bus::IRQ()
 {

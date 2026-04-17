@@ -1,9 +1,9 @@
 #ifndef DEBUG_H
 #define DEBUG_H
+#include "pins_D8500s.h"
 
-#include "../config.h"
+#include "config.h"
 #include <Arduino.h>
-#include <TFT_eSPI.h>
 
 #ifdef DEBUG
     #define LOG(msg)        Serial.println(msg)
@@ -20,8 +20,8 @@
         LOGF("SD_SPI_PORT:              %d\n", SD_SPI_PORT);
         LOG("--- TFT ---");
         LOGF("TFT_MOSI:                 %d\n", TFT_MOSI);
-        LOGF("TFT_MISO:                 %d\n", TFT_MISO);
-        LOGF("TFT_SCLK:                 %d\n", TFT_SCLK);
+        //LOGF("TFT_MISO:                 %d\n", TFT_MISO);
+        //LOGF("TFT_SCLK:                 %d\n", TFT_SCLK);
         LOGF("TFT_CS:                   %d\n", TFT_CS);
         LOGF("TFT_DC:                   %d\n", TFT_DC);
         LOGF("TFT_RST:                  %d\n", TFT_RST);

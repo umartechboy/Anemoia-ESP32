@@ -2,7 +2,6 @@
 #define BUS_H
 
 #include <Arduino.h>
-#include <TFT_eSPI.h>
 #include <stdio.h>
 #include <stdint.h>
 #include "config.h"
@@ -10,6 +9,8 @@
 #include "../debug.h"
 #include "cpu6502.h"
 #include "ppu2C02.h"
+
+class BufferedDisplay;
 
 class Bus
 {
@@ -30,7 +31,7 @@ public:
     Cartridge::MIRROR getPPUMirrorMode();
 
     void insertCartridge(Cartridge* cartridge);
-    void connectScreen(TFT_eSPI* screen);
+    void connectScreen(BufferedDisplay* screen);
     void reset();
     void clock();
     void IRQ();
@@ -44,7 +45,7 @@ public:
 
 private:
     void cpuClock();
-    TFT_eSPI* ptr_screen;
+    BufferedDisplay* ptr_screen;
     uint8_t controller_state;
     uint8_t controller_strobe = 0x00;
     bool frame_latch = false;

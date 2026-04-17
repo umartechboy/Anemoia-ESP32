@@ -2,29 +2,68 @@
 #include <SD.h>
 #include <SPI.h>
 #include <string>
-#include <TFT_eSPI.h>
 #include <WiFi.h>
 #include <vector>
 
-#include "src/core/bus.h"
-#include "src/controller.h"
-#include "src/debug.h"
-#include "src/ui.h"
+#include "core/bus.h"
+#include "controller.h"
+#include "debug.h"
+#include "ui.h"
 #include "config.h"
 #include "hwconfig.h"
 #include "driver/i2s.h"
 #include "esp_wifi.h"
 #include "esp_bt.h"
 #include "esp_bt_main.h"
+#include <Adafruit_ST7735.h>
+#include "pins_D8500s.h"
+#include "BufferedDisplay.h"
 
 #ifndef OPTIMIZATION_FLAGS
 #error The optimization flags were not applied! Please refer to *Step 4* of the README how to build and upload section.
 #endif
 
+void pollingTask(void* param);
+void apuTask(void* param) ;
+void setupI2SDAC();
+bool initSD() ;
+IRAM_ATTR void emulate();
+void invalidCartridge();
+
+
+#include <SPI.h>
+class Adafruit_ST7735s: public Adafruit_ST7735 {
+  public: 
+  Adafruit_ST7735s(SPIClass *spiClass, int8_t cs, int8_t dc, int8_t rst):
+    Adafruit_ST7735(spiClass, cs, dc, rst){}
+  void ST7735sPatch(){
+    _height = ST7735_TFTHEIGHT_128;
+    _width = ST7735_TFTWIDTH_128;
+    Serial.printf("ST7735sPatch applied. New dimensions: %d x %d, width(): %d, height(): %d\n", _width, _height, width(), height());
+  }
+};
+Adafruit_ST7735s tft = Adafruit_ST7735s(&SPI, TFT_CS, TFT_DC, TFT_RST);
+
+void TFT_startWrite()
+{
+    tft.startWrite();
+}
+void TFT_setAddressWindow(int x, int y, int width, int height)
+{
+    tft.setAddrWindow(x, y, width, height);
+}
+void TFT_writePixels(uint16_t *colors, uint16_t count)
+{
+    tft.writePixels(colors, count, false, false);
+}
+void TFT_endWrite()
+{
+    tft.endWrite();
+}
+BufferedDisplay* screen;
 HWConfig hw_config;
-TFT_eSPI screen = TFT_eSPI();
 SPIClass SD_SPI(SD_SPI_PORT);
-UI ui(&screen);
+UI ui;
 Cartridge* cart;
 void setup() 
 {
@@ -38,46 +77,61 @@ void setup()
     esp_wifi_stop();
     esp_wifi_deinit();
     btStop();
-    esp_bt_controller_disable();
-    esp_bt_mem_release(ESP_BT_MODE_BTDM);
-    esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
 
     hw_config = loadConfig();
     setupI2SDAC();
 
-    // Initialize TFT screen
-    screen.begin();
-    screen.setRotation(hw_config.rotation);
-    #ifndef DISABLE_DMA
-        screen.initDMA();
-    #endif
-    screen.fillScreen(BG_COLOR);
-    screen.startWrite();
-
-    if (hw_config.backlight)
-    {
-        pinMode(TFT_BACKLIGHT_PIN, OUTPUT);
-        ledcAttach(TFT_BACKLIGHT_PIN, BL_FREQ, BL_RESOLUTION);
-        ledcWrite(TFT_BACKLIGHT_PIN, 255);
-    }
+    pinMode(TFT_DC, OUTPUT);
+    pinMode(TFT_CS, OUTPUT);
+    SPI.begin(37, 36, 35);
+    tft.initR(INITR_BLACKTAB);
+    tft.setRotation(3);
+    tft.ST7735sPatch();
+    screen = new BufferedDisplay(tft, TFT_startWrite, TFT_setAddressWindow, TFT_writePixels, TFT_endWrite);
+    ui.begin(screen);
+    screen->fillScreen(Color(255,0,0));
 
     // Initialize microsd card
     if(!initSD()) while (true);
+    Serial.println("SD initialized successfully.");
+    
     ui.initializeSettings();
-
+    Serial.println("Settings initialized.");
+    delay(1); // serial flush
     // Setup buttons
     initController();
+    Serial.println("Controllers initialized.");
+    Serial.println("Setup complete.");
+    delay(1);
 }
 
 void loop() 
 {
+    Serial.println("Selecting game...");
+    delay(1);
     cart = ui.selectGame();
+    Serial.println("Game selected.");
+    delay(1);
     if (cart && cart->isValid())
     {
+        Serial.println("Starting emulation...");
+        delay(1);
         emulate();
     }
-
+    Serial.println("Invalid cartridge.");
+    delay(1);
     invalidCartridge();
+}
+
+void displayUpdateTask(void* param) {
+    BufferedDisplay* scr = (BufferedDisplay*)param;
+    while (true) {
+        if (scr->needUpdate()) {
+            scr->update();
+            scr->clearUpdateFlag();
+        }
+        vTaskDelay(1 / portTICK_PERIOD_MS);  // 1ms delay
+    }
 }
 
 #ifdef DEBUG
@@ -90,7 +144,7 @@ IRAM_ATTR void emulate()
 {
     Bus nes;
     nes.insertCartridge(cart);
-    nes.connectScreen(&screen);
+    nes.connectScreen(screen);
     nes.reset();
     ui.loadEmulatorSettings(&nes);
 
@@ -115,7 +169,17 @@ IRAM_ATTR void emulate()
     &polling_task_handle,
     0
     );
-    screen.setAddrWindow(32, 0, 256, 240);
+
+    TaskHandle_t display_task_handle;
+    xTaskCreatePinnedToCore(
+    displayUpdateTask,
+    "Display Update Task",
+    2048,
+    screen,
+    1,
+    &display_task_handle,
+    1  // core 1
+    );
 
     #ifdef DEBUG
         last_frame_time = esp_timer_get_time();
@@ -137,13 +201,13 @@ IRAM_ATTR void emulate()
                 vTaskResume(apu_task_handle);
                 next_frame = esp_timer_get_time() + FRAME_TIME;
                 nes.controller = 0;
-                screen.setAddrWindow(32, 0, 256, 240);
             }
         }
 
         // Generate one frame
         nes.clock();
-
+        //screen->AcceptUpdates = !screen->AcceptUpdates;
+        screen->updateAsync();
         #ifdef DEBUG
             current_frame_time = esp_timer_get_time();
             total_frame_time += (current_frame_time - last_frame_time);
@@ -172,32 +236,39 @@ IRAM_ATTR void emulate()
 
 bool initSD() 
 {
+#if SD_TYPE == SD_TYPE_SD
     LOG("Initializing SD...");
     SD_SPI.begin(SD_SCLK_PIN, SD_MISO_PIN, SD_MOSI_PIN, SD_CS_PIN);
     if (!SD.begin(SD_CS_PIN, SD_SPI, hw_config.sd_freq * 1000000)) 
+#else
+    LOG("Initializing LittleFS...");
+    if (!LittleFS.begin())
+#endif
     {
         LOG("SD Card Mount Failed");
-
-        screen.setTextSize(2);
+        LittleFS.format();
+        LOG("SD Card formatted");
+        #if SD_TYPE != SD_TYPE_SD
+        if (!LittleFS.begin()) {
+            LOG("LittleFS mount failed after format");
+        } else {
+            LOG("LittleFS mounted after format");
+        }
+        #endif
+        screen->setTextSize(1);
+        screen->setFont();
+        screen->setCursor(0, 0);
+        screen->setTextColor(Color(255,255,255));
         const char* txt1 = "SD Init failed!";
         const char* txt2 = "Insert SD card or";
         const char* txt3 = "lower SD frequency";
         const char* txt4 = "in config.h";
-        int w1 = screen.textWidth(txt1, 2);
-        int w2 = screen.textWidth(txt2, 2);
-        int w3 = screen.textWidth(txt3, 2);
-        int w4 = screen.textWidth(txt4, 2);
-        
-        int x1 = (320 - w1) / 2;
-        int x2 = (320 - w2) / 2;
-        int x3 = (320 - w3) / 2;
-        int x4 = (320 - w4) / 2;
 
-        screen.setTextColor(TFT_WHITE);
-        screen.drawString(txt1, x1, 56, 2);
-        screen.drawString(txt2, x2, 88, 2);
-        screen.drawString(txt3, x3, 120, 2);
-        screen.drawString(txt4, x4, 152, 2);
+        screen->println(txt1);
+        screen->println(txt2);
+        screen->println(txt3);
+        screen->println(txt4);
+        screen->Debug = true;
         return false;
     }
 
@@ -207,10 +278,11 @@ bool initSD()
 
 void invalidCartridge()
 {
-    screen.fillScreen(BG_COLOR);
-    screen.setTextColor(TFT_WHITE);
-    screen.setTextDatum(MC_DATUM);
-    screen.drawString("ROM Mapper not supported!", screen.width() / 2, screen.height() / 2, 2);
+    screen->fillScreen(BG_COLOR);
+    screen->setTextColor(ST7735_WHITE);
+    screen->setTextDatum(MC_DATUM);
+    screen->drawString("ROM Mapper not supported!", screen->width() / 2, screen->height() / 2, 2);
+    screen->update();
     delay(3000);
     ESP.restart();
 }

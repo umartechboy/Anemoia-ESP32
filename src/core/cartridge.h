@@ -1,7 +1,7 @@
 #ifndef CARTRIDGE_H
 #define CARTRIDGE_H
 
-#include <SD.h>
+#include "NES_SD.h"
 #include <SPI.h>
 #include <vector>
 

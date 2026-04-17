@@ -10,11 +10,11 @@
 #define SUPPORT_TRANSACTIONS
 #define USE_DMA
 
-#define TFT_MOSI   23
+#define TFT_MOSI   11
 #define TFT_MISO   -1
-#define TFT_SCLK   18
-#define TFT_CS     5
-#define TFT_DC     2
+#define TFT_SCLK   12
+#define TFT_CS     39
+#define TFT_DC     40
 #define TFT_RST    -1
 
 #define TOUCH_CS -1

@@ -3,7 +3,7 @@
 
 #include <LittleFS.h>
 #include "config.h"
-#include "src/debug.h"
+#include "debug.h"
 
 struct __attribute__((packed)) HWConfig 
 {

@@ -1,6 +1,10 @@
 #include "ui.h"
+#include <Adafruit_ST7735.h>
 
-UI::UI(TFT_eSPI* screen)
+UI::UI()
+{    
+}
+void UI::begin(BufferedDisplay* screen)
 {    
     this->screen = screen;
 }
@@ -12,23 +16,25 @@ UI::~UI()
 Cartridge* UI::selectGame()
 {
     unsigned int last_input_time = 0;
-    constexpr unsigned int delay = 250; 
+    constexpr unsigned int delay_ms = 250; 
     max_items = (screen->height() - 56) / ITEM_HEIGHT;
 
     drawWindowBox(2, 20, screen->width() - 4, screen->height() - 40);
     drawBars();
     getNesFiles();
     drawFileList();
-
+    screen->update();
+    Serial.printf("Found %d NES files\n", files.size());
     const int size = files.size();
     while (true)
     {
         unsigned int now = millis();
 
-        if (now - last_input_time > delay)
+        if (now - last_input_time > delay_ms)
         {
             if (isDownPressed(CONTROLLER::Up)) 
             {
+                Serial.println("Up pressed");
                 selected--;
                 if (selected < 0)
                 {
@@ -39,11 +45,13 @@ Cartridge* UI::selectGame()
                 if (scroll_offset < 0) scroll_offset = 0;
                 if (scroll_offset > size - 1) scroll_offset = size - 1;
                 drawFileList();
+                screen->update();
                 last_input_time = now;
             }
 
             if (isDownPressed(CONTROLLER::Down)) 
             {
+                Serial.println("Down pressed");
                 selected++; 
                 if (selected > (size - 1))
                 {
@@ -54,6 +62,7 @@ Cartridge* UI::selectGame()
                 if (scroll_offset < 0) scroll_offset = 0;
                 if (scroll_offset > size - 1) scroll_offset = size - 1;
                 drawFileList();
+                screen->update();
                 last_input_time = now;
             }
             
@@ -61,22 +70,33 @@ Cartridge* UI::selectGame()
         
         if (isDownPressed(CONTROLLER::A) && (selected >= 0 && selected < size))
         {
+            Serial.printf("Selected file: %s\n", files[selected].c_str());
+            delay(1);
             std::string game = "/" + files[selected];
             const char* path = game.c_str();
 
+            Serial.printf("Opening cartridge: %s\n", path);
             std::vector<std::string>().swap(files);
             return new Cartridge(path);
         }
+        screen->update();
     }
 }
 
 void UI::getNesFiles()
 {
+    // Print total the total contents of the SD card (or LittleFS)
+    Serial.println("Contents of the filesystem:");
+    // Implement an all files listing here
+    
+
     File root = SD.open("/");
     while (true)
     {
         File file = root.openNextFile();
+
         if (!file) break;
+        Serial.printf("File: %s, Size: %d, IsDir: %d\n", file.name(), file.size(), file.isDirectory());
         if (!file.isDirectory())
         {
             std::string filename = file.name();
@@ -131,11 +151,11 @@ void UI::drawFileList()
 
 void UI::drawWindowBox(int x, int y, int w, int h) 
 {
-    screen->drawRect(x, y, w, h, TFT_WHITE);
-    screen->drawRect(x+1, y, w-2, h, TFT_WHITE);
+    screen->drawRect(x, y, w, h, ST7735_WHITE);
+    screen->drawRect(x+1, y, w-2, h, ST7735_WHITE);
 
-    screen->drawRect(x+4, y+3, w-8, h-7, TFT_WHITE);
-    screen->drawRect(x+5, y+3, w-10, h-7, TFT_WHITE);
+    screen->drawRect(x+4, y+3, w-8, h-7, ST7735_WHITE);
+    screen->drawRect(x+5, y+3, w-10, h-7, ST7735_WHITE);
 
     const char* text1 = " ANEMOIA.CPP ";
     screen->setTextColor(TEXT_COLOR, BG_COLOR);
@@ -147,7 +167,7 @@ void UI::drawBars()
 {
     // Top bar
     screen->fillRect(0, 0, screen->width(), 16, BAR_COLOR);
-    screen->setTextColor(TFT_BLACK, BAR_COLOR);
+    screen->setTextColor(ST7735_BLACK, BAR_COLOR);
 
     const char* text1 = "ANEMOIA-ESP32";
     screen->setCursor((screen->width() - screen->textWidth(text1)) / 2, 4);
@@ -155,7 +175,7 @@ void UI::drawBars()
 
     // Bottom bar
     screen->fillRect(0, screen->height() - 16, screen->width(), 16, BAR_COLOR);
-    screen->setTextColor(TFT_BLACK, BAR_COLOR);
+    screen->setTextColor(ST7735_BLACK, BAR_COLOR);
 
     int y = screen->height() - 12;
     int x = 4;
@@ -164,13 +184,13 @@ void UI::drawBars()
     screen->setCursor(x, y);
     screen->print("Up/Down");
 
-    screen->setTextColor(TFT_BLACK, BAR_COLOR);
+    screen->setTextColor(ST7735_BLACK, BAR_COLOR);
     screen->print(" Move   ");
 
     screen->setTextColor(TEXT2_COLOR, BAR_COLOR);
     screen->print("A");
 
-    screen->setTextColor(TFT_BLACK, BAR_COLOR);
+    screen->setTextColor(ST7735_BLACK, BAR_COLOR);
     screen->print(" Select");
 }
 
@@ -230,8 +250,8 @@ void UI::pauseMenu(Bus* nes)
     {
         int w = window_w - 16;
         int h = (section_count[s] * item_height) + 8;
-        screen->drawRect(window_x + 8, section_y, w, h, TFT_BLACK);
-        screen->drawRect(window_x + 9, section_y, w, h, TFT_BLACK);
+        screen->drawRect(window_x + 8, section_y, w, h, ST7735_BLACK);
+        screen->drawRect(window_x + 9, section_y, w, h, ST7735_BLACK);
 
         section_y += (h - 1);
     }
@@ -271,7 +291,7 @@ void UI::pauseMenu(Bus* nes)
                 switch (select)
                 {
                 case Resume:
-                    screen->fillScreen(TFT_BLACK);
+                    screen->fillScreen(ST7735_BLACK);
                     screen->startWrite();
                     paused = false;
                     return;
@@ -286,8 +306,8 @@ void UI::pauseMenu(Bus* nes)
                     {
                         int w = window_w - 16;
                         int h = (section_count[s] * item_height) + 8;
-                        screen->drawRect(window_x + 8, section_y, w, h, TFT_BLACK);
-                        screen->drawRect(window_x + 9, section_y, w, h, TFT_BLACK);
+                        screen->drawRect(window_x + 8, section_y, w, h, ST7735_BLACK);
+                        screen->drawRect(window_x + 9, section_y, w, h, ST7735_BLACK);
 
                         section_y += (h - 1);
                     }
@@ -308,14 +328,14 @@ void UI::pauseMenu(Bus* nes)
 
                 case QuickSaveState:
                     nes->saveState();
-                    screen->fillScreen(TFT_BLACK);
+                    screen->fillScreen(ST7735_BLACK);
                     screen->startWrite();
                     paused = false;
                     return;
 
                 case QuickLoadState:
                     nes->loadState();
-                    screen->fillScreen(TFT_BLACK);
+                    screen->fillScreen(ST7735_BLACK);
                     screen->startWrite();
                     paused = false;
                     return;
@@ -398,8 +418,8 @@ void UI::settingsMenu(Bus* nes)
     constexpr int text_height = 8;
     constexpr int text_padding = (item_height - text_height) / 2;
 
-    screen->drawRect(window_x + 8, window_y + 8, window_w - 16, window_h - 16, TFT_BLACK);
-    screen->drawRect(window_x + 9, window_y + 8, window_w - 16, window_h - 16, TFT_BLACK);
+    screen->drawRect(window_x + 8, window_y + 8, window_w - 16, window_h - 16, ST7735_BLACK);
+    screen->drawRect(window_x + 9, window_y + 8, window_w - 16, window_h - 16, ST7735_BLACK);
     
     screen->fillRect(window_x + 10, items_y[0], window_w - 19, item_height, SELECTED_BG_COLOR);
     for (int i = 0; i < num_items; i++)
@@ -414,7 +434,7 @@ void UI::settingsMenu(Bus* nes)
             else
             {
                 screen->setCursor(window_x + 12, y);
-                screen->setTextColor(TFT_DARKGREY);
+                screen->setTextColor(ST7735_GRAY);
                 screen->print(items[i]);
             }
         }
@@ -544,11 +564,15 @@ void UI::settingsMenu(Bus* nes)
 
 void UI::initializeSettings()
 {
+    Serial.println("Initializing settings...");
     if (!SD.exists("/settings.bin"))
     {
-        Settings temp = {100, 100, 0};
+        Serial.println("Settings file not found. Creating default settings.");
+        Settings temp;
         saveSettings(&temp);
     }
+    
+    Serial.println("Loading settings...");
     loadSettings(&settings);
 
     if (hw_config.backlight)
@@ -563,12 +587,14 @@ void UI::loadEmulatorSettings(Bus* nes)
 
 void UI::setBrightness(int value)
 {
+    return; // --- IGNORE ---
     uint8_t pwm = ((value * 255) + 50) / 100;
     ledcWrite(TFT_BACKLIGHT_PIN, pwm);
 }
 
 void UI::saveSettings(const Settings* s)
 {
+    Serial.println("Saving settings...");
     File f = SD.open("/settings.bin", FILE_WRITE);
     if (!f) return;
         
@@ -579,12 +605,19 @@ void UI::saveSettings(const Settings* s)
 
 void UI::loadSettings(Settings* s)
 {
+    Serial.println("Loading settings...");
     File f = SD.open("/settings.bin", FILE_READ);
-    if (!f) return;
+    if (!f)
+    {
+        Serial.println("Failed to open settings file.");
+        return;
+    }
+    Serial.println("Settings file opened successfully.");
     if (f.size() != sizeof(Settings)) 
     {
+        Serial.println("Settings file is corrupted. Creating default settings.");
         f.close();
-        Settings temp = {100, 100, 0};
+        Settings temp;
         saveSettings(&temp);
         *s = temp;
         f.close();
@@ -597,7 +630,7 @@ void UI::loadSettings(Settings* s)
 
 void UI::drawText(const char* text, const int x, const int y)
 {
-    screen->setTextColor(TFT_BLACK);
+    screen->setTextColor(ST7735_BLACK);
     screen->setCursor(x, y);
     screen->print(text);
     screen->setCursor(x, y);

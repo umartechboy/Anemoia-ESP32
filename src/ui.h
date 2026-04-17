@@ -1,8 +1,7 @@
 #ifndef UI_H
 #define UI_H
 
-#include <SD.h>
-#include <TFT_eSPI.h>
+#include "NES_SD.h"
 
 #include "controller.h"
 #include "core/bus.h"
@@ -12,19 +11,21 @@
 #define BL_FREQ 5000
 #define BL_RESOLUTION 8
 
-#define BG_COLOR 0x0015
-#define BAR_COLOR 0xAD55
-#define TEXT_COLOR 0xFFFF
-#define TEXT2_COLOR 0xA800
-#define SELECTED_TEXT_COLOR 0x57CA
-#define SELECTED_BG_COLOR 0x0560
+#define BG_COLOR Color(255, 0, 0)
+#define BAR_COLOR Color (255, 255, 255)
+#define TEXT_COLOR Color(255, 255, 255)
+#define TEXT2_COLOR Color(255, 0, 0)
+#define SELECTED_TEXT_COLOR Color(0, 0, 255)
+#define SELECTED_BG_COLOR Color(128, 128, 128)
 
+#include "BufferedDisplay.h"
 extern HWConfig hw_config;
 class UI
 {
 public:
-    UI(TFT_eSPI* screen);
+    UI();
     ~UI();
+    void begin(BufferedDisplay* screen);
     Cartridge* selectGame();
     void getNesFiles();
     void drawFileList();
@@ -39,7 +40,7 @@ public:
 private:
     void setBrightness(int value);
     void drawText(const char* text, const int x, const int y);
-    TFT_eSPI* screen = nullptr;
+    BufferedDisplay* screen = nullptr;
     int selected = 0;
     int prev_selected = 0;
     int scroll_offset = 0;

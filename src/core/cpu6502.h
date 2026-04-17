@@ -2,7 +2,7 @@
 #define CPU6502_H
 
 #include <Arduino.h>
-#include <SD.h>
+#include "NES_SD.h"
 #include <stdint.h>
 
 #include "apu2A03.h"

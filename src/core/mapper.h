@@ -2,7 +2,7 @@
 #define MAPPER_H
 
 #include <cstring>
-#include <SD.h>
+#include "NES_SD.h"
 #include <stdint.h>
 #include <stdlib.h>
 

@@ -1,0 +1,1 @@
+esptool --chip esp32s3 --port COM8 --baud 460800 write_flash 0x0 .pio/build/esp32doit-devkit-v1/bootloader.bin 0x8000 .pio/build/esp32doit-devkit-v1/partitions.bin 0x10000 .pio/build/esp32doit-devkit-v1/firmware.bin
