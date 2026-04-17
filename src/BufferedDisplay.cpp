@@ -252,24 +252,66 @@ void BufferedDisplay::pushPixels(uint16_t* image, uint32_t len, uint16_t scanlin
     for (uint32_t sy = 0; sy < srcHeight; sy++)
     {
         const uint32_t srcY = scanline + sy;
-        const uint32_t destY = (screenH == 240) ? srcY : (srcY * screenH) / 240;
+        const uint32_t destY = srcY >> 1;
         if (destY >= screenH)
             continue;
 
         uint16_t* row = image + sy * sourceWidth;
         for (uint32_t sx = 0; sx < sourceWidth; sx++)
         {
-            const uint32_t destX = (screenW == sourceWidth) ? sx : (sx * screenW) / sourceWidth;
+            const uint32_t destX = sx >> 1;
             if (destX >= screenW)
                 continue;
             // Swap RGB to BGR for display
-            uint16_t color = row[sx];
-            color = ((color & 0x001F) << 11) | (color & 0x07E0) | ((color & 0xF800) >> 11);
-            drawPixel(destX, destY, color);
+            // uint16_t color = row[sx];
+            // color = ((color & 0x001F) << 11) | (color & 0x07E0) | ((color & 0xF800) >> 11);
+            drawPixel(destX, destY, row[sx]);
         }
     }
     totalPushTime += (millis() - st);
 }
+
+// void BufferedDisplay::pushPixels(uint16_t* image, uint32_t len, uint16_t scanline)
+// {
+//     if (!AcceptUpdates)
+//         return;
+//     long st = millis() ;
+//     constexpr uint32_t sourceWidth = 256;
+//     const uint32_t screenW = this->width();
+//     const uint32_t screenH = this->height();
+//     const uint32_t srcHeight = (sourceWidth > 0) ? (len / sourceWidth) : 0;
+
+//     if (srcHeight == 0 || srcHeight * sourceWidth != len)
+//     {
+//         totalPushTime += (millis() - st);
+//         //Serial.printf("pushPixels: invalid image len %u, expected multiple of %u\n", len, sourceWidth);
+//         return;
+//     }
+
+//     //Serial.printf("pushPixels: image size %u, NES chunk %u x %u, scanline %u, screen %u x %u\n",
+//                   //len, sourceWidth, srcHeight, scanline, screenW, screenH);
+
+//     for (uint32_t sy = 0; sy < srcHeight; sy++)
+//     {
+//         const uint32_t srcY = scanline + sy;
+//         const uint32_t destY = (screenH == 240) ? srcY : (srcY * screenH) / 240;
+//         if (destY >= screenH)
+//             continue;
+
+//         uint16_t* row = image + sy * sourceWidth;
+//         for (uint32_t sx = 0; sx < sourceWidth; sx++)
+//         {
+//             const uint32_t destX = (screenW == sourceWidth) ? sx : (sx * screenW) / sourceWidth;
+//             if (destX >= screenW)
+//                 continue;
+//             // Swap RGB to BGR for display
+//             // uint16_t color = row[sx];
+//             // color = ((color & 0x001F) << 11) | (color & 0x07E0) | ((color & 0xF800) >> 11);
+//             drawPixel(destX, destY, row[sx]);
+//         }
+//     }
+//     totalPushTime += (millis() - st);
+// }
 
 void BufferedDisplay::pushPixelsDMA(uint16_t* image, uint32_t len, uint16_t scanline)
 {
