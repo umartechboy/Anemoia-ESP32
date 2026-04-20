@@ -1,8 +1,7 @@
 #include "JoystickADC.h"
 #include "config.h"
-static const int joystickMaxADC[6] = { 860, 815, 770, 700, 530, 20 };
-static const int joystickMinADC[6] = { 816, 771, 710, 610, 460, 0 };
-
+int maxADC [] =     { 880, 842, 802, 715, 535, 45,};
+int minADC [] =     { 843, 803, 736, 665, 495, 0,};
 uint32_t readADCMV(int pin);
 int digitalReadADCJoystick(int pin);
 
@@ -72,7 +71,7 @@ uint8_t digitalReadJoystick(uint8_t pin) {
     int adc = readADCMV();
     //int adc = analogRead(3);
     int keyIndex = pin - A_BUTTON;
-    int ans = (adc >= joystickMinADC[keyIndex] && adc <= joystickMaxADC[keyIndex]) ? LOW : HIGH;
+    int ans = (adc >= minADC[keyIndex] && adc <= maxADC[keyIndex]) ? LOW : HIGH;
     Serial.printf("ADC: %d, Pin: %d, State: %s\n", adc, pin, ans == LOW ? "Pressed" : "Released");
-    return 1;
+    return ans;
 }
