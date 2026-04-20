@@ -37,12 +37,12 @@
 // HSPI: MOSI=13, MISO=12, SCLK=14, CS=15
 
 // Button pins
-#define RIGHT_BUTTON 200
-#define A_BUTTON 201
-#define UP_BUTTON 202
-#define B_BUTTON 203
-#define DOWN_BUTTON 204
-#define LEFT_BUTTON 205
+#define RIGHT_BUTTON 0
+#define A_BUTTON 1
+#define UP_BUTTON 2
+#define B_BUTTON 3
+#define DOWN_BUTTON 4
+#define LEFT_BUTTON 5
 #define START_BUTTON 42 // Y stop
 #define SELECT_BUTTON 41 // X stop
 

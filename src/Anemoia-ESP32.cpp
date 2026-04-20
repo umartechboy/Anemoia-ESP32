@@ -121,6 +121,7 @@ void setup()
     Serial.println("Setup complete.");
     delay(1);
 }
+extern int adcKeyPadReading;
 
 void loop() 
 {
@@ -225,9 +226,12 @@ IRAM_ATTR void emulate()
         }
 
         // Generate one frame
+        adcKeyPadReading = (analogRead(3) * 1100) / 4095; // Convert to mV
+        Serial.printf("ADC Reading: %d mV\n", adcKeyPadReading);
         nes.clock();
         //screen->AcceptUpdates = !screen->AcceptUpdates;
         screen->updateAsync();
+        
         #ifdef DEBUG
             current_frame_time = esp_timer_get_time();
             total_frame_time += (current_frame_time - last_frame_time);

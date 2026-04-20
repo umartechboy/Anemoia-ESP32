@@ -1,6 +1,6 @@
 #include "JoystickADC.h"
 #include "config.h"
-int maxADC [] =     { 880, 842, 802, 715, 535, 45,};
+int maxADC [] =     { 900, 850, 802, 715, 535, 45,};
 int minADC [] =     { 843, 803, 736, 665, 495, 0,};
 uint32_t readADCMV(int pin);
 int digitalReadADCJoystick(int pin);
@@ -66,12 +66,16 @@ uint32_t readADCMV() {
   return this_adc_result;
 }
 
+int adcKeyPadReading = 0;
+long lastKeyPadPriunt = 0;
   // Override digitalRead
 uint8_t digitalReadJoystick(uint8_t pin) {
-    int adc = readADCMV();
+      
     //int adc = analogRead(3);
-    int keyIndex = pin - A_BUTTON;
-    int ans = (adc >= minADC[keyIndex] && adc <= maxADC[keyIndex]) ? LOW : HIGH;
-    Serial.printf("ADC: %d, Pin: %d, State: %s\n", adc, pin, ans == LOW ? "Pressed" : "Released");
+    int keyIndex = pin;
+    if (pin >= 6)
+      return 1;
+    int ans = (adcKeyPadReading >= minADC[keyIndex] && adcKeyPadReading <= maxADC[keyIndex]) ? LOW : HIGH;
+
     return ans;
 }

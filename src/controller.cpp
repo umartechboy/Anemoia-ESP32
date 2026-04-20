@@ -21,12 +21,12 @@ extern uint8_t digitalReadJoystick(uint8_t pin);
 static uint8_t gpioRead()
 {
     uint8_t state = 0x00;
+    if (digitalReadJoystick(RIGHT_BUTTON)  == LOW) state |= CONTROLLER::Right;
     if (digitalReadJoystick(A_BUTTON)      == LOW) state |= CONTROLLER::A;
-    if (digitalReadJoystick(B_BUTTON)      == LOW) state |= CONTROLLER::B;
     if (digitalReadJoystick(UP_BUTTON)     == LOW) state |= CONTROLLER::Up;
+    if (digitalReadJoystick(B_BUTTON)      == LOW) state |= CONTROLLER::B;
     if (digitalReadJoystick(DOWN_BUTTON)   == LOW) state |= CONTROLLER::Down;
     if (digitalReadJoystick(LEFT_BUTTON)   == LOW) state |= CONTROLLER::Left;
-    if (digitalReadJoystick(RIGHT_BUTTON)  == LOW) state |= CONTROLLER::Right;
     if (digitalRead(SELECT_BUTTON) == LOW) state |= CONTROLLER::Select;
     if (digitalRead(START_BUTTON)  == LOW) state |= CONTROLLER::Start;
 

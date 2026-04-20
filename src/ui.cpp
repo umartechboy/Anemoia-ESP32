@@ -13,6 +13,8 @@ UI::~UI()
 {
 }
 
+extern int adcKeyPadReading;
+
 Cartridge* UI::selectGame()
 {
     unsigned int last_input_time = 0;
@@ -30,6 +32,8 @@ Cartridge* UI::selectGame()
     {
         unsigned int now = millis();
 
+        adcKeyPadReading = (analogRead(3) * 1100) / 4095; // Convert to mV
+        Serial.printf("ADC Reading: %d mV\n", adcKeyPadReading);
         if (now - last_input_time > delay_ms)
         {
             if (isDownPressed(CONTROLLER::Up)) 
